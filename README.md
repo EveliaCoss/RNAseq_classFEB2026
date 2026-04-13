@@ -36,9 +36,9 @@ Les comparto el [plan de estudios](https://docs.google.com/spreadsheets/d/1E_V69
 
 - Fecha: martes 14 de abril, 2026
 - Presentación:
-    - [Aspectos generales de RNA-Seq](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia1_AspectosGenerales.html#1)
-    - [Control de calidad de los datos](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia1_AspectosGenerales.html#43)
-    - [Mis primeros pasos en Bash](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia1_AspectosGenerales.html#68)
+    - [Aspectos generales de RNA-Seq](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#1)
+    - [Control de calidad de los datos](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#43)
+    - [Mis primeros pasos en Bash](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#68)
 - Datos: `/mnt/data/bioinfo-estadistica-2/RNAseq_2026/`
 - **Entregable 1:** Tarea para el **jueves 16 de abril**: Elegir en equipos los transcriptomas que emplearán en su proyecto - [Información diapositiva 60 y Google Classroom ENES](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia1_AspectosGenerales.html#64)
 

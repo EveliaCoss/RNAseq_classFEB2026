@@ -2,7 +2,7 @@
 title: "Workshop: Análisis de datos de RNA-Seq"
 subtitle: "⚔<br/>Aspectos generales de RNA-Seq / Control de calidad de los datos"  
 author: "Dra. Evelia Coss"
-date: "25/02/2025"
+date: "14/04/2026"
 output:
   xaringan::moon_reader:
     css: 
@@ -145,9 +145,6 @@ class: middle, center
 
 Investigadora Posdoctoral en el Laboratorio Internacional de Investigación sobre el Genoma Humano [(LIIGH), UNAM](https://twitter.com/LIIGH_UNAM), campus Juriquilla
 
-
-[`r fontawesome::fa("link")` Dra Alejandra Medina-Rivera](https://liigh.unam.mx/profile/dra-alejandra-medina-rivera/)
-
 [`r fontawesome::fa("github")` EveliaCoss.github.io](https://eveliacoss.github.io/)
 
 ]
@@ -158,8 +155,6 @@ Investigadora Posdoctoral en el Laboratorio Internacional de Investigación sobr
 
 ### `r fontawesome::fa("star", fill = "#181818")` Miembro
 
-- [LupusRGMX](https://twitter.com/LupusRgmx)
-- [Proyecto JAGUAR](https://twitter.com/PJaguarLATAM)
 - [Rladies Morelia](https://www.facebook.com/profile.php?id=100093337606435)
 - [CDSB - Mexico](https://twitter.com/CDSBMexico)
 - [RIABIO](https://twitter.com/RiaBioNet)
@@ -516,6 +511,7 @@ class: inverse, center, middle
 # Consideraciones ANTES de la secuenciación
 
 ---
+
 # Flujo experimental de RNA-Seq
 ----
 
@@ -1071,7 +1067,7 @@ knitr::include_graphics("figures/Figura17.png")
 class: inverse, center, middle
 
 `r fontawesome::fa("feather", height = "3em")`
-## Tarea para el **Jueves 27 de Feb**
+## Tarea para el **16 de abril 2026**
 ### Elegir en equipos los transcriptomas que emplearán en su proyecto.
 
 ---
@@ -1129,7 +1125,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 .content-box-red[
 
-- **Bioprojects previamente utilizados:** PRJNA821620 (At), PRJNA256121 (At), PRJNA858106 (Hs), PRJNA826506 (Hs), PRJNA649971 (Mm), PRJNA743296 (Hs), PRJNA739157 (Hs), PRJNA983389 (Hs), PRJNA759864 (Hs).
+- **Bioprojects previamente utilizados:** PRJNA821620 (At), PRJNA256121 (At), PRJNA858106 (Hs), PRJNA826506 (Hs), PRJNA649971 (Mm), PRJNA743296 (Hs), PRJNA739157 (Hs), PRJNA983389 (Hs), PRJNA759864 (Hs), PRJNA152985 (Dm), PRJNA494527 (Hs), PRJNA1198988 (Hs).
  
 - **Bioprojects asignados en cursos:** PRJNA649971 (Mm) - [RNASeq_Workshop_Nov2023](https://github.com/EveliaCoss/RNASeq_Workshop_Nov2023) y [RNAseq_classFEB2024](https://github.com/EveliaCoss/RNAseq_classFEB2024), PRJNA821620 (At) - [RNAseq_classFEB2023](https://github.com/EveliaCoss/RNAseq_classFEB2023)
 ] 
@@ -1205,7 +1201,7 @@ cd ../ # Ir a la carpeta anterior
 # `cd` : Moverse entre carpetas
 
 ```{bash, eval=F}
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/
 ls
 ```
 
@@ -1216,17 +1212,17 @@ ls
 ---
 # `mkdir`: Crear nuevas carpetas
 
-Crear una nueva carpeta que se llame "BioProject_2025" y que contenga dos carpetas internas: `data/` y `graph/`.
+Crear una nueva carpeta que se llame "BioProject_2026" y que contenga dos carpetas internas: `data/` y `graph/`.
 
 ```{bash, eval=F}
 cd data
-mkdir BioProject_2025 
+mkdir BioProject_2026 
 ```
 
 Movernos a esta nueva carpeta y generar las otras dos carpetas:
 
 ```{bash, eval=F}
-cd BioProject_2025
+cd BioProject_2026
 mkdir data 
 mkdir counts
 ```
@@ -1234,7 +1230,7 @@ mkdir counts
 Cuando terminen tendrán la siguiente distribución en sus carpetas. El directorio donde estamos localizados es `BioProject_2025/`.
 
 ```{bash, eval=F}
-BioProject_2025/ # directorio de trabajo donde nos localizamos
+BioProject_2026/ # directorio de trabajo donde nos localizamos
 |- data/
 |- counts/
 ```
@@ -1250,13 +1246,13 @@ knitr::include_graphics("figures/rsync.png")
 Descargar Información
 
 ```{bash, eval=F}
-rsync ecoss@liigh.unam.mx:"/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/test.txt" .
+rsync ecoss@liigh.unam.mx:"/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/test.txt" .
 ```
 
 Subir Información
 
 ```{bash, eval=F}
-rsync ./test.txt ecoss@liigh.unam.mx:"/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/"
+rsync ./download_all_rawData.sh ecoss@liigh.unam.mx:"/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/scripts"
 ```
 
 ---
@@ -1301,6 +1297,7 @@ knitr::include_graphics("figures/permisos3.png")
 
 
 ---
+
 # `chmod`: Cambiar permisos
 
 La representación octal de chmod es muy sencilla
@@ -1377,7 +1374,7 @@ countdown(minutes = 15, seconds = 00)
 class: center, middle
 
 `r fontawesome::fa("code", height = "3em")`
-# Jueves 27 de febrero 2025  
+# Jueves 16 de abril 2026  
 ## Diversos pipeline para Alineamiento, ensamblaje y conteo
 
 Gracias por tu atención, respira y coméntame tus dudas. 
