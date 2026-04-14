@@ -738,7 +738,32 @@ Ideal para una especie con **genoma de mala calidad o sin referencia**, como **o
 
 class: inverse, center, middle
 
-`r fontawesome::fa("bars", height = "3em")`
+`r fontawesome::fa("feather", height = "3em")`
+## Tarea para el **Martes 21 de abril, 2026**
+### Reporte de calidad de las secuencias crudas
+
+**Subir en la tarea de Google Classroom**
+
+---
+
+### Tarea
+## Cada equipo debe entregarme un documento en formato Rmd y HTML que contenga la siguiente información:
+
+- Descripción de los datos (entregable 1, fecha límite: 25 de febrero).
+- Explicación de las gráficas generadas por MultiQC.
+- Conclusión sobre los datos: 
+    + ¿Son viables para continuar con el análisis? 
+    + ¿Qué pasos deben seguirse para mejorar la calidad de los datos?
+
+Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2026/Entregable_ejemplo2.html)
+
+**Subir en la tarea de Google Classroom**
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("circle-nodes", height = "3em")`
 # 5. Pipelines de kallisto: Ensamblaje de **transcriptoma guiado**
 
 ---
@@ -944,7 +969,7 @@ abundance.h5  abundance.tsv  run_info.json
 
 class: inverse, center, middle
 
-`r fontawesome::fa("bars", height = "3em")`
+`r fontawesome::fa("align-center", height = "3em")`
 # 6. Alineamiento con el genoma de referencia mediante **STAR**
 
 ---
@@ -956,10 +981,18 @@ Se ha demostrado que STAR tiene una *alta precisión y supera a otros alineadore
 - Búsqueda de semillas
 - Agrupación, unión y puntuación
 
-.pull-left[
-**Búsqueda de semillas**
+---
 
-Por cada lectura que STAR alinea, STAR buscará la secuencia más larga que coincida exactamente con una o más ubicaciones en el genoma de referencia. Estas secuencias coincidentes más largas se denominan Prefijos Mapeables Máximos (MMP):
+.pull-left[
+## Búsqueda de semillas
+
+- **Lectura** → búsqueda en genoma: STAR toma cada lectura y busca la coincidencia más larga exacta en el genoma de referencia.
+
+- **Prefijo Mapeable Máximo (MMP)**: identifica la secuencia más larga que coincide exactamente; cada MMP se denomina “semilla” (seed1, seed2…).
+
+- **Proceso iterativo**: después de mapear la primera semilla, STAR vuelve a buscar en la parte no alineada de la lectura para encontrar el siguiente MMP.
+
+- **Resultado**: la lectura se reconstruye como una serie de semillas que juntas permiten el alineamiento completo, incluso si la lectura abarca intrones o regiones complejas.
 
 ]
 
@@ -977,7 +1010,48 @@ knitr::include_graphics("figures/alignment_STAR_step1.png")
 
 ---
 
+**Si STAR no encuentra una secuencia que coincida exactamente** con cada parte de la lectura debido a desajustes o inserciones/deleciones, los MMP anteriores se extenderán.
 
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step3.png")
+```
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+
+---
+
+**Si la extensión no produce una buena alineación**, la secuencia de mala calidad o la secuencia adaptadora (u otra secuencia contaminante) se recortará suavemente.
+
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step4.png")
+```
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+---
+
+.pull-left[
+## Agrupación, unión y puntuación
+Las semillas individuales se unen para crear una lectura completa, agrupándolas primero según su proximidad a un conjunto de semillas "ancla", es decir, semillas que no se mapean en múltiples direcciones.
+
+Luego, las semillas se unen en función de la mejor alineación para la lectura (puntuación basada en desajustes, inserciones/deleciones, huecos, etc.).
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step5.png")
+```
+
+]
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
 
 ---
 
@@ -1197,31 +1271,6 @@ knitr::include_graphics("figures/rnaseq_nexflow.png")
 .left[.footnote[.black[
 Imagen proveniente de [nf-core/rnaseq](https://nf-co.re/rnaseq/3.14.0/)
 ]]]
-
----
-
-class: inverse, center, middle
-
-`r fontawesome::fa("feather", height = "3em")`
-## Tarea para el **Martes 4 de marzo**
-### Reporte de calidad de las secuencias crudas
-
-**Subir en la tarea de Google Classroom**
-
----
-
-### Tarea
-## Cada equipo debe entregarme un documento en formato Rmd y HTML que contenga la siguiente información:
-
-- Descripción de los datos (entregable 1, fecha límite: 25 de febrero).
-- Explicación de las gráficas generadas por MultiQC.
-- Conclusión sobre los datos: 
-    + ¿Son viables para continuar con el análisis? 
-    + ¿Qué pasos deben seguirse para mejorar la calidad de los datos?
-
-Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2026/Entregable_ejemplo2.html)
-
-**Subir en la tarea de Google Classroom**
 
 ---
 
