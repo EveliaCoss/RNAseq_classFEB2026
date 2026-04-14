@@ -40,9 +40,9 @@ Les comparto el [plan de estudios](https://docs.google.com/spreadsheets/d/1E_V69
     - [Control de calidad de los datos](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#43)
     - [Mis primeros pasos en Bash](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#68)
 - Datos: `/mnt/data/bioinfo-estadistica-2/RNAseq_2026/`
-- **Entregable 1:** Tarea para el **jueves 16 de abril**: Elegir en equipos los transcriptomas que emplearán en su proyecto - [Información diapositiva 60 y Google Classroom ENES](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia1_AspectosGenerales.html#64)
+- **Entregable 1:** Tarea para el **jueves 16 de abril**: Elegir en equipos los transcriptomas que emplearán en su proyecto - [Información diapositiva 60 y Google Classroom ENES](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia1_AspectosGenerales.html#64)
 
-Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2025/Entregable_ejemplo1.html)
+Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2026/Entregable_ejemplo1.html)
 
 > Bioproject que usaron anteriormente (NO SE PUEDEN USAR): PRJNA821620 (At), PRJNA256121 (At), PRJNA858106 (Hs), PRJNA826506 (Hs), PRJNA649971 (Mm), PRJNA743296 (Hs), PRJNA739157 (Hs), PRJNA983389 (Hs), PRJNA759864 (Hs), PRJNA152985 (Dm), PRJNA494527 (Hs), PRJNA1198988 (Hs), 
 >
@@ -59,7 +59,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 - Fecha: jueves 16 de abril, 2026
 - Presentación:
-    - [Diversos pipeline para Alineamiento, ensamblaje y conteo de reads](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia2_QCAlineamiento.html#1)
+    - [Diversos pipeline para Alineamiento, ensamblaje y conteo de reads](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia2_QCAlineamiento.html#1)
 - Lecturas y cursos recomendados:
     - Alineamiento *de novo* - [Trinity](https://github.com/trinityrnaseq/trinityrnaseq)
     - Alineamiento con el genoma de referencia - [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
@@ -73,7 +73,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
       - ¿Son viables para continuar con el análisis? 
       - ¿Qué pasos deben seguirse para mejorar la calidad de los datos?
 
-Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2025/Entregable_ejemplo2.html)
+Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB2026/Entregable_ejemplo2.html)
 
 **Subir en la tarea de Google Classroom**
 
@@ -81,8 +81,8 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 - Fecha: martes 21 de abril, 2026
 - Presentación:
-    - [Importar datos en R, Normalización y Corrección por batch / DEG con DESeq2](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia3_ImportarDatos.html#1)
-- Scripts: https://github.com/EveliaCoss/RNAseq_classFEB2025/tree/main/Practica_Dia3/scripts/
+    - [Importar datos en R, Normalización y Corrección por batch / DEG con DESeq2](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+- Scripts: https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia3/scripts/
 - Lecturas y cursos recomendados:
     - [Metodos de normalizacion](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
     - [RNA-seq workflow: gene-level exploratory analysis and differential expression](https://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#pca-plot-using-generalized-pca)
@@ -103,7 +103,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 - Fecha: jueves 30 de abril, 2026
 - Presentación:
-   - [GSEA - Análisis funcional](https://eveliacoss.github.io/RNAseq_classFEB2025/Presentaciones/Dia4_GSEA.html#1)
+   - [GSEA - Análisis funcional](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_GSEA.html#1)
 - Lecturas y cursos recomendados:
     - Base de datos [Gene Ontology Resource](http://geneontology.org/)
     - Base de datos [AmiGo2](https://amigo.geneontology.org/amigo/landing)
