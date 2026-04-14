@@ -749,7 +749,7 @@ class: inverse, center, middle
 ### Tarea
 ## Cada equipo debe entregarme un documento en formato Rmd y HTML que contenga la siguiente información:
 
-- Descripción de los datos (entregable 1, fecha límite: 25 de febrero).
+- Descripción de los datos (entregable 1, fecha límite: 16 de marzo).
 - Explicación de las gráficas generadas por MultiQC.
 - Conclusión sobre los datos: 
     + ¿Son viables para continuar con el análisis? 
