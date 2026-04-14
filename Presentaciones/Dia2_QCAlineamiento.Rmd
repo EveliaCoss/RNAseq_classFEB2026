@@ -2,7 +2,7 @@
 title: "Workshop: Análisis de datos de RNA-Seq"
 subtitle: "⚔<br/>Alineamiento y conteo de RNA-seq"  
 author: "Dra. Evelia Coss, Sofia Salazar y Diego Ramirez"
-date: "27/02/2025"
+date: "16/04/2025"
 output:
   xaringan::moon_reader:
     css: 
@@ -115,7 +115,7 @@ style_duo_accent(
 ```
 
 class: title-slide, middle, center
-background-image: url(figures/Clases_RNASeq_Slide1.png) 
+background-image: url(figures/HelloWorld_slide1.png) 
 background-position: 90% 75%, 75% 75%, center
 background-size: 1210px,210px, cover
 
@@ -273,10 +273,10 @@ DT::datatable(
 
 Esto descargará un script BASH `.sh` como [este](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/PRJNA1051620_download.sh), el cual utilizar para descargar las muestras.
 
-Para correr este script y descargar las muestras, debemos ir a la carpeta donde las queremos guardar y ahí guardamos el script. Supongamos que yo renombré mi script a [`PRJNA1051620_download.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/PRJNA1051620_download.sh). Y lo tengo en una carpeta llamada `scripts`.
+Para correr este script y descargar las muestras, debemos ir a la carpeta donde las queremos guardar y ahí guardamos el script. Supongamos que yo renombré mi script a [`PRJNA1051620_download.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/PRJNA1051620_download.sh). Y lo tengo en una carpeta llamada `scripts`.
 
 ```{bash, eval = F}
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/scripts/
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/scripts/
 ```
 
 > NOTA: Recuerda darle permisos a tus compañer@s:
@@ -289,11 +289,11 @@ setfacl -R -m u:usuario:rwx CARPETA
 
 ### Descarga de los datos con `wget`
 
-Ya que las descargas tardan mucho, es conveniente enviar el script a la cola de ejecución usando **Sun Grid Engine (SGE)** con un archivo .sge. De esta manera, el script seguirá ejecutándose aunque tú no estés. 
+Ya que las descargas tardan mucho, es conveniente enviar el script a la cola de ejecución usando **Slurm (Simple Linux Utility for Resource Management)** con un archivo `.sh`. De esta manera, el script seguirá ejecutándose aunque tú no estés. 
 
 Es necesario tener un solo script donde todos los datos se descargue. 
 
-  - Ejemplo: [download_all_rawData.sge](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/download_all_rawData.sge)
+  - Ejemplo: [download_all_rawData.sh](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/download_all_rawData.sh)
 
 ---
 
@@ -303,22 +303,53 @@ Es necesario tener un solo script donde todos los datos se descargue.
 
 🚫 **No ejecutes scripts pesados ni análisis directamente en el nodo de acceso.**
 
-✔️ **Siempre usa el sistema de colas (SGE)** para enviar trabajos o solicita un nodo de prueba si necesitas ejecutar algo interactivo. Usa `qsub` para enviar trabajos.
+✔️ **Siempre usa el sistema de colas (slurm)** para enviar trabajos o solicita un nodo de prueba si necesitas ejecutar algo interactivo. Usa `qsub` para enviar trabajos.
 
-Si necesitas hacer pruebas o ejecutar código interactivamente, solicita un nodo de prueba con `qlogin` o `qsub -I`.
+Si necesitas hacer pruebas o ejecutar código interactivamente, solicita un nodo de prueba con `srun -p interactive --pty bash`.
 
 ```{bash, eval=F}
-qlogin # pedir un nodo de prueba, default = 2GB
-qlogin -pe smp 4 -l h_vmem=16G
+e # pedir un nodo de prueba
+# Nos asigna 1 tarea, 1 CPU y memoria de 2 GB
+# Ver limite de la particion
+sinfo -p interactive
+# ver cuanto nos asignaron
+scontrol show job $SLURM_JOB_ID
 ```
-
-
-`qlogin`:	Solicita un nodo interactivo en el clúster (para probar código en tiempo real). `-pe smp 4`:	Pide 4 núcleos (CPUs) en el entorno paralelo smp (Shared Memory Processing). `-l h_vmem=16G`:	Asigna 16 GB de memoria RAM por núcleo (en total, 4 × 16 GB = 64 GB de RAM para el trabajo).
 
 Para salir del nodo interactivo, usa:
 
 ```{bash, eval=F}
 exit
+```
+
+---
+
+## Ejemplo de uso interactivo
+
+Si quieres entrar a una sesión interactiva con más control, puedes pedir explícitamente recursos:
+
+```{bash, eval=F}
+srun -p interactive --ntasks=1 --cpus-per-task=1 --mem=2G --time=01:00:00 --pty bash
+```
+
+Esto nos da: 1 tarea, 1 CPU, memoria 2GB de RAM, 1 hora de tiempo máximo.
+
+---
+
+## Analogía: “Trabajadores en una mesa”
+
+- **Tarea** (`--ntasks`) → es como un trabajador independiente. Cada tarea es un proceso que Slurm lanza.
+
+- **CPU por tarea** (`--cpus-per-task`) → son las manos que tiene cada trabajador. Más manos = puede hacer varias cosas en paralelo.
+
+- **Memoria** (`--mem`) → es el tamaño de la mesa donde ese trabajador pone sus materiales. Si la mesa es pequeña, se le caen los libros; si es grande, puede trabajar cómodo.
+
+Ejemplo: 
+
+```{bash, eval=F}
+#SBATCH --ntasks=1            # 1 trabajador
+#SBATCH --cpus-per-task=1.    # 1 mano
+#SBATCH --mem=2G              # en una mesa pequeña
 ```
 
 ---
@@ -352,14 +383,11 @@ Para más información visita la pagina https://multiqc.info/docs/getting_starte
 Vamos a analizar el contenido del script `qc1.sge`:
 
 ```{bash, eval = F}
-# Add any modules you might require:
-#
+# Modulos requeridos:
 module load fastqc/0.11.3
-module load multiqc/1.5
-#
-# Write your commands in the next line
+
 # FastQC analysis
-for file in /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/data/*.fastq.gz; do fastqc $file -o /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/quality1; done
+for file in /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/*.fastq.gz; do fastqc $file -o /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/quality1; done
 ```
 
 Para analizar  **todos los archivos** que tengan terminación `.fastq.gz` podemos emplear un `for loop`:
@@ -384,7 +412,7 @@ Veamos la información contenida en el [`SRR12363092_1_fastqc.html`](https://eve
 ## Pausa: Mi carpeta se ve (más o menos) así:
 
 ```{bash, eval = F}
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
 ├── data/
 │   ├── SRR12363092_1.fastq.gz
 │   ├── SRR12363092_2.fastq.gz
@@ -408,14 +436,16 @@ Mira [aquí](https://github.com/EveliaCoss/RNASeq_Workshop_Nov2023/blob/main/Dia
 Multiqc reconoce los outputs de `fastqc` por lo que el comando para utilizarlo es muy sencillo
 
 ```{bash, eval = F}
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/quality1
+module load anaconda3/2025.06 # Cargar el módulo de Anaconda
+conda activate multiqc-1.5 # Activar el ambiene dentro de Conda
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/raw/
 multiqc .
 ```
 
 > **NOTA:** siempre es mejor utilizar direcciones absolutas a relativas, para evitar que tus outputs se guarden en un directorio no deseado.
 
 ```{bash, eval = F}
-multiqc /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/quality1/
+multiqc /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/raw/
 ```
 
 ---
@@ -424,15 +454,15 @@ multiqc /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/quality1/
 
 Si desean ver como se analizaron los datos empleando los programas `FastQC` y `multiQC` dentro del cluster DNA, les dejo el siguiente script:
 
-  - [`qc1.sge`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/qc1.sge)
+  - [`qc1.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/qc1.sh)
 
-Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/out_logs/qc1.o369176) la salida del programa.
+Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/out_logs/qc1.o369176) la salida del programa.
 
 ---
 
 ## Analicemos el output de `multiqc`
 
-Veamos la informacion contenida en el [`multiqc_report.html`](https://eveliacoss.github.io/RNAseq_classFEB2025/Practica_Dia2/FastQC_Reports/multiqc_report.html).
+Veamos la informacion contenida en el [`multiqc_report.html`](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia2/FastQC_Reports/multiqc_report.html).
 
 ---
 
@@ -457,7 +487,7 @@ Para hacer **trimming** de las lecturas que no tuvieron una buena calidad, utili
 Descarga los adaptadores de [aquí](https://github.com/timflutre/trimmomatic/blob/master/adapters/TruSeq3-PE-2.fa)
 
 ```{bash, eval = F}
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
 # Paired-end
 wget https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE-2.fa
 # single-end
@@ -478,15 +508,15 @@ Usamos un `for loop` para hacer trimmomatic a cada par de lecturas `SRRxxxxx_1.f
 
 ```{bash, eval = F}
 module load trimmomatic/0.33
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/data
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data
 for i in *_1.fastq.gz;
 do echo
 trimmomatic PE -threads 8 -phred33 $i "${i%_1.fastq.gz}_2.fastq.gz" \
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/"${i%_1.fastq.gz}_1_trimmed.fq.gz" \
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/"${i%_1.fastq.gz}_1_unpaired.fq.gz" \
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/"${i%_1.fastq.gz}_2_trimmed.fq.gz" \
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/"${i%_1.fastq.gz}_2_unpaired.fq.gz" \
-ILLUMINACLIP:/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80 \
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/"${i%_1.fastq.gz}_1_trimmed.fq.gz" \
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/"${i%_1.fastq.gz}_1_unpaired.fq.gz" \
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/"${i%_1.fastq.gz}_2_trimmed.fq.gz" \
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/"${i%_1.fastq.gz}_2_unpaired.fq.gz" \
+ILLUMINACLIP:/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/adaptadores/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80 \
 
 done
 ```
@@ -503,7 +533,7 @@ Trimmomatic nos dará 4 outputs: Las secuencias que quedaron sin par que eran or
 ## Documentación de las opciones
 
 ```{bash, eval= F}
-ILLUMINACLIP:/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
+ILLUMINACLIP:/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/adaptadores/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
 ```
 
 ILLUMINACLIP:`<fastaWithAdaptersEtc>:<seed mismatches>:<palindrome clip threshold>:<simple clip threshold>`
@@ -525,7 +555,7 @@ LEADING:`<quality>`
 ## Documentación de las opciones
 
 ```{bash, eval= F}
-ILLUMINACLIP:/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
+ILLUMINACLIP:/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/adaptadores/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
 ```
 
 TRAILING:`<quality>`
@@ -546,7 +576,7 @@ SLIDINGWINDOW:`<windowSize>:<requiredQuality>`
 ## Documentación de las opciones
 
 ```{bash, eval= F}
-ILLUMINACLIP:/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
+ILLUMINACLIP:/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/adaptadores/TruSeq3-PE-2.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:80
 ```
 
 MINLEN: `MINLEN:<longitud>`
@@ -563,11 +593,11 @@ Corramos `fastqc` y `multiqc` de nuevo
 
 ```{bash, eval = F}
 mkdir quality2
-for file in /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TRIM_results/*.fq.gz; do fastqc $file -o /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/quality2; done
+for file in /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/*.fq.gz; do fastqc $file -o /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/quality2; done
 ```
 
 ```{bash, eval = F}
-multiqc /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/quality2
+multiqc /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2026/quality2
 ```
 
 ---
@@ -584,7 +614,7 @@ Si desean ver como se analizaron los datos empleando los programas `FastQC` y `m
 ### Pausa: Mi carpeta se ve (más o menos) así:
 
 ```{bash, eval = F}
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
 ├── data
 │   ├── SRR12363092_1.fastq.gz
 ...
@@ -795,9 +825,9 @@ knitr::include_graphics("figures/gencodegenes-logo.png")
 Pide un nodo de prueba, descarga el archivo de anotación de tu especie y descomprime el archivo. Este ejemplo es para *Homo sapiens*:
 
 ```{bash, eval=F}
-cd /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/reference/
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/
 wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_47/gencode.v47.annotation.gtf.gz
-# gunzip  /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/reference/gencode.v47.annotation.gtf.gz
+# gunzip  /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2026/Practica/reference/gencode.v47.annotation.gtf.gz
 ```
 
 ---
@@ -817,7 +847,7 @@ Imagen proveniente de [NCBI](https://www.gencodegenes.org/human/stats_47.html)
 ## Pausa: Hasta este punto debemos de contar con los siguientes archivos
 
 ```{bash, eval = F}
-/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/Practica/
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
 ├── data/
 │   ├── SRR12363092_1.fastq.gz
 │   ├── SRR12363092_2.fastq.gz
@@ -861,9 +891,9 @@ El script para crear el indice es el siguiente:
 ```{bash, eval = F}
 STAR --runThreadN 12 \
 --runMode genomeGenerate \
---genomeDir /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/STAR_index \
---genomeFastaFiles /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/reference/hg38.fa \
---sjdbGTFfile /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/reference/gencode.v47.annotation.gtf.gz \
+--genomeDir /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index \
+--genomeFastaFiles /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/hg38.fa \
+--sjdbGTFfile /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/gencode.v47.annotation.gtf.gz \
 --sjdbOverhang 149
 ```
 
@@ -889,17 +919,17 @@ Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practic
 Si revisamos el [Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) notarás que hay una opción para **Contar lecturas por genes** (Sección 8). Con la opción de `--quantMode`. De hecho, estas cuentas coinciden con las cuentas que nos daría `htseq-count`
 
 ```{bash, eval = F}
-index=/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/STAR_index
-FILES=/mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TRIM_results/*_1_trimmed.fq.gz
+index=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index
+FILES=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/*_1_trimmed.fq.gz
 for f in $FILES
 do
     base=$(basename $f _1_trimmed.fq.gz)
     echo $base
-    STAR --runThreadN 12 --genomeDir $index --readFilesIn $f /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/TRIM_results/$base"_2_trimmed.fq.gz" \
+    STAR --runThreadN 12 --genomeDir $index --readFilesIn $f /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/$base"_2_trimmed.fq.gz" \
     --outSAMtype BAM SortedByCoordinate \
     --quantMode GeneCounts \
     --readFilesCommand zcat \
-    --outFileNamePrefix /mnt/atgc-d1/bioinfoII/rnaseq/BioProject_2025/STAR_output/$base
+    --outFileNamePrefix /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_output/$base
 done
 ```
 

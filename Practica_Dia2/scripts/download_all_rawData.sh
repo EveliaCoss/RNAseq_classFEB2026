@@ -15,7 +15,7 @@
 . /etc/profile.d/modules.sh
 
 # Cambiar al directorio de trabajo
-cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/raw/
 
 # Comandos de descarga
 wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR271/085/SRR27190685/SRR27190685_2.fastq.gz
