@@ -650,7 +650,7 @@ Veamos la información contenida en los reportes:
 class: inverse, center, middle
 
 `r fontawesome::fa("bars", height = "3em")`
-# 4. Alineamiento con el genoma de referencia mediante STAR
+# 4. Pipelines de alineamiento
 
 ---
 
@@ -670,9 +670,9 @@ La **alineación del genoma** es un proceso bioinformático que consiste alinear
 <img src="figures/alignment_pipelines.png", height = "450">
 ]
 
-.left[.footnote[.black[
+.footnote[.black[
 [Conesa, *et al*, 2016. *Genome Biology*](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-016-0881-8)
-]]]
+]]
 
 ---
 
@@ -720,9 +720,30 @@ Las lecturas de RNA-Seq se asignan a un transcriptoma de referencia, que es una 
 
 ---
 
-## 2. Ensamblaje de **transcriptoma guiado**
+## 3. Ensamblaje ***de novo***
 
-### [**Kallisto**](https://pachterlab.github.io/kallisto/manual)
+.pull-left[
+```{r, echo=FALSE, out.width='50%', fig.align='center'}
+knitr::include_graphics("figures/alignment_denovo.png")
+```
+]
+
+.pull-right[
+Ideal para una especie con **genoma de mala calidad o sin referencia**, como **organismos NO modelos**, además de si no contamos con un archivo de anotación bueno.
+
+- Es recomendado utilizar lecturas *Paired-end*.
+]
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("bars", height = "3em")`
+# 5. Pipelines de kallisto: Ensamblaje de **transcriptoma guiado**
+
+---
+
+## [**Kallisto**](https://pachterlab.github.io/kallisto/manual)
 
 .pull-left[
 - Se basa en la probabilidad de asignación correcta de las lecturas a un transcrito.
@@ -752,7 +773,7 @@ knitr::include_graphics("figures/alignment_kallisto.png")
 
 ---
 
-### Pipeline con **Kallisto**: Ensamblaje de transcriptoma guiado
+## Pipeline con **Kallisto**: Ensamblaje de transcriptoma guiado
 
 - Input:
   + Transcriptoma de referencia
@@ -776,7 +797,7 @@ La idea es **unirlos en un solo FASTA** para que *Kallisto* tenga un transcripto
 
 ---
 
-## En Ensembl
+## Descarga del Transcriptoma de referencia en Ensembl
 
 Me fije que fuera el genoma de referencia [GRCh38.p14/hg38](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) (Feb 3, 2022) (FASTA) proveniente de NCBI. Y Seleccione donde dice `Download FASTA`:
 
@@ -786,7 +807,7 @@ knitr::include_graphics("figures/ensembl_human.png")
 
 ---
 
-## En Ensembl
+## Descarga del Transcriptoma de referencia en Ensembl
 
 Posteriormente se desplego la [siguiente ventana](https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/) y seleccione las carpetas `cdna` y `ncrna`:
 
@@ -894,7 +915,7 @@ done
 
 ---
 
-## Como sabemos que ya termino
+## Como sabemos que ya termino **Kallisto**
 
 ```
 ls kallisto_quant/*
@@ -921,19 +942,42 @@ abundance.h5  abundance.tsv  run_info.json
 
 ---
 
-## 3. Ensamblaje ***de novo***
+class: inverse, center, middle
+
+`r fontawesome::fa("bars", height = "3em")`
+# 6. Alineamiento con el genoma de referencia mediante **STAR**
+
+---
+
+## Funcionamiento de **STAR**
+
+Se ha demostrado que STAR tiene una *alta precisión y supera a otros alineadores* por un factor de más de 50 en velocidad de mapeo, pero consume mucha memoria. El algoritmo logra este mapeo altamente eficiente mediante un proceso de dos pasos:
+
+- Búsqueda de semillas
+- Agrupación, unión y puntuación
 
 .pull-left[
-```{r, echo=FALSE, out.width='50%', fig.align='center'}
-knitr::include_graphics("figures/alignment_denovo.png")
-```
+**Búsqueda de semillas**
+
+Por cada lectura que STAR alinea, STAR buscará la secuencia más larga que coincida exactamente con una o más ubicaciones en el genoma de referencia. Estas secuencias coincidentes más largas se denominan Prefijos Mapeables Máximos (MMP):
+
 ]
 
 .pull-right[
-Ideal para una especie con **genoma de mala calidad o sin referencia**, como **organismos NO modelos**, además de si no contamos con un archivo de anotación bueno.
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step1.png")
+```
 
-- Es recomendado utilizar lecturas *Paired-end*.
 ]
+
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+---
+
+
 
 ---
 
