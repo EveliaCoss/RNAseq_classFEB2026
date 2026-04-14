@@ -405,14 +405,6 @@ fastqc nombre.fastq.gz -o /directorio/de/salida
 
 ---
 
-## Analicemos el output de `fastQC`
-
-- Veamos la información contenida en el [`SRR12363092_1_fastqc.html`](https://eveliacoss.github.io/RNAseq_classFEB2025/Practica_Dia2/FastQC_Reports/SRR12363092_1_fastqc.html).
-
-- Mira [aquí](https://github.com/EveliaCoss/RNASeq_Workshop_Nov2023/blob/main/Dia2_Alineamiento/out_logs/qc1.o369176) cómo se ve la ejecución de este comando.
-
----
-
 ## Pausa: Mi carpeta se ve (más o menos) así:
 
 ```{bash, eval = F}
@@ -462,9 +454,12 @@ Si desean ver como se analizaron los datos empleando los programas `FastQC` y `m
 
 ---
 
-## Analicemos el output de `multiqc`
+## Analicemos el output del `FastQC` y `multiqc`
+### Primer control de calidad
 
-Veamos la informacion contenida en el [`multiqc_report.html`](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia2/FastQC_Reports/multiqc_report.html).
+- Veamos la información contenida en el [`SRR12363092_1_fastqc.html`](https://eveliacoss.github.io/RNAseq_classFEB2025/Practica_Dia2/FastQC_Reports/SRR12363092_1_fastqc.html).
+
+- Veamos la informacion contenida en el [`multiqc_report.html`](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia2/FastQC_Reports/multiqc_report.html).
 
 ---
 
@@ -641,7 +636,8 @@ Si desean ver como se analizaron los datos empleando los programas `FastQC` y `m
 
 ---
 
-### Analicemos el output del `FastQC` y `multiqc`
+## Analicemos el output del `FastQC` y `multiqc`
+### Segundo control de calidad
 
 Veamos la información contenida en los reportes:
 
@@ -802,7 +798,7 @@ knitr::include_graphics("figures/ensembl_reference.png")
 
 ### Pipeline con **Kallisto**
 
-## Paso 1. Descargar ambos archivos con `wget`.
+### Paso 1. Descargar ambos archivos con `wget`
 
 ```{bash, eval=F}
 cd reference
@@ -824,7 +820,7 @@ Aquí simplemente concatenas ambos archivos comprimidos.
 
 ### Pipeline con **Kallisto**
 
-## Paso 3. Generar el index con Kallisto
+### Paso 3. Generar el index con Kallisto
 
 ```{bash, eval = F}
 # Crear la carpeta
@@ -840,20 +836,20 @@ Argumentos:
 - `-i`: nombre del archivo de salida, i.e., indice
 - `Input`: At_stringm_seq_v2.fasta, transcriptoma de referencia
 
-Si quieren intentarlo les dejo el curso que di en 2023 - [RNAseq_classFEB2023](https://github.com/EveliaCoss/RNAseq_classFEB2023/tree/main/RNA_seq).
+Si quieren intentarlo con *Arabidopsis thaliana* les dejo el curso que di en 2023 - [RNAseq_classFEB2023](https://github.com/EveliaCoss/RNAseq_classFEB2023/tree/main/RNA_seq).
 
 ---
 
 ### Pipeline con **Kallisto**
 
-## Paso 4. Pseudoalineamiento con Kallisto
+### Paso 4. Pseudoalineamiento con Kallisto
 
 .pull-left[
 - ***Single-end***
 
 ```{bash, eval = F}
 # Single-end
-for file in ./processed/*trimmed.fq.gz
+for file in ./data/processed//*trimmed.fq.gz
 do
   clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//;s/\.fastq\.gz//;s/\.fq\.gz//')   # Nombre de la carpeta de salida, mismo nombre de SRA
   kallisto quant --index ./kallisto_quant/transcripts.idx --output-dir ./kallisto_quant/${clean} --single -l 200 -s 20  --threads=12 $file
@@ -870,11 +866,13 @@ Puedes tener este ERROR porque no colocas `--single -l -s`,
 - ***Paired-end***
 ```{bash, eval = F}
 # Paired-end
-for file in ./processed/*_1.fastq.gz                                                         # Read1
+for file in ./data/processed/*_1.fq.gz                                                         # Read1
 do
-  clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//;s/\.fastq\.gz//;s/_1\.fq\.gz//')         # Nombre de la carpeta de salida, mismo nombre de SRA
-  file_2=$(echo ${clean}_2.fastq.gz| sed 's/FP/RP/')                                            # Read2
-  kallisto quant --index ./kallisto_quant/transcripts.idx --output-dir ./kallisto_quant/${clean} --threads 12 ${file} ${file_2}
+  clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//')         # Nombre de la carpeta de salida, mismo nombre de SRA
+  file_2=${clean}_2.fastq.gz                                           # Read2
+  kallisto quant --index ./reference/transcripts.idx \
+               --output-dir ./kallisto_quant/${clean} \
+               --threads 12 ${file} ${file_2}
 done
 ```
 
@@ -962,8 +960,7 @@ Ideal para una especie con **genoma de mala calidad o sin referencia**, como **o
 Este archivo deberá estar contenido en la carpeta `reference/`. Puedes usar el genoma de referencia contenido en el clúster con ayuda de un symlink.
 
 ```{bash, eval=FALSE}
-# wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
-ln -s /mnt/Archives/genome/human/GRCh38/UCSC/chromosomes/hg38.fa .
+ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz .
 ```
 
 > Es mejor crear **enlaces simbólicos (symlinks)** en vez de copiar cada archivo, ya que permite ahorrar mucho espacio en el disco al evitar la multiplicación de copias fisicas en el disco duro del mismo archivo.
@@ -981,8 +978,11 @@ Utilizaremos el Archivo de anotación de **GCF_000001405.40-RS_2025_08 de RefSeq
 ]
 
 .pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/AgencyLogo.svg")
+
+Crear un symlink: 
+
+```{bash, eval=FALSE}
+ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.gtf.gz .
 ```
 ]
 
@@ -1014,14 +1014,12 @@ Pide un nodo de prueba, descarga el archivo de anotación de tu especie y descom
 wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/#:~:text=GCF_000001405.40_GRCh38.p14_genomic.gtf.gz
 ```
 
----
-
 ## Tipos de archivos
 
 Siempre hay un [README](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/README.txt) en los archivos que nos permitira saber más információn sobre los archivos:
 
-- *_genomic.fna.gz: Genoma de referencia en formato FASTA (`.fna` o `.fa`) 
-- *_genomic.gtf.gz: Archivo de anotación en formato GTF.
+- `*_genomic.fna.gz`: Genoma de referencia en formato FASTA (`.fna` o `.fa`) 
+- `*_genomic.gtf.gz`: Archivo de anotación en formato GTF.
 
 ---
 
@@ -1036,8 +1034,8 @@ Siempre hay un [README](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405
 │   ├── SRR12363093_2.fastq.gz
 ...
 ├── reference/
-│   ├── hg38.fa # symlink
-│   ├── gencode.v47.annotation.gtf.gz # Archivo de anotacion
+│   ├── GCF_000001405.40_GRCh38.p14_genomic.fna.gz # Genoma de referencia
+│   ├── GCF_000001405.40_GRCh38.p14_genomic.gtf.gz # Archivo de anotacion
 ...
 ```
 
@@ -1053,7 +1051,7 @@ El genoma de referencia sirve como plantilla contra la cual se realizan diversos
 
 ---
 
-## 1. Crear un índice de STAR
+### Paso 1. Crear un índice de STAR
 
 Carguemos el módulo de STAR
 
@@ -1070,7 +1068,7 @@ mkdir STAR_index
 El script para crear el indice es el siguiente:
 
 ```{bash, eval = F}
-STAR --runThreadN 12 \
+STAR --runThreadN 30 \
 --runMode genomeGenerate \
 --genomeDir /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index \
 --genomeFastaFiles /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/hg38.fa \
@@ -1088,14 +1086,12 @@ Entremos al
 Si desean ver como se analizaron los datos empleando el programa `STAR` para realizar el *index del genoma* dentro del cluster DNA, les dejo los siguientes scripts:
 
   - [`STAR_index.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/STAR_index.sh) 
-  - [`index.sge`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/index.sge)
-
 
 Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/out_logs/index.o369188) cómo se ve la ejecución de este comando.
 
 ---
 
-## 2. Alinear y **CONTAR** con STAR
+## Paso 2. Alinear y **CONTAR** con STAR
 
 Si revisamos el [Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) notarás que hay una opción para **Contar lecturas por genes** (Sección 8). Con la opción de `--quantMode`. De hecho, estas cuentas coinciden con las cuentas que nos daría `htseq-count`
 
@@ -1118,12 +1114,6 @@ Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practic
 
 ---
 
-### SCRIPTS empleados en la clase
-
-Todos los scripts usados en esta clase están en el [GitHub](https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia2/scripts)
-
----
-
 ### Las carpetas contenidas por equipo deberan ser:
 
 ```{bash, eval = F}
@@ -1142,6 +1132,10 @@ Equipo1
 └── TruSeq3-PE-2.fa # Adaptadores PE de Illumina
 
 ```
+
+### SCRIPTS empleados en la clase
+
+Todos los scripts usados en esta clase están en el [GitHub](https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia2/scripts)
 
 ---
 
