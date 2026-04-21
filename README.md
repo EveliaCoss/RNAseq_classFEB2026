@@ -25,8 +25,8 @@ Les comparto el [plan de estudios](https://docs.google.com/spreadsheets/d/1E_V69
 
 - Dia 1. Aspectos generales de RNA-Seq / Control de calidad de los datos (14 de abril, 2026)
 - Dia 2. Diversos pipeline para Alineamiento, ensamblaje y conteo de reads (16 de abril, 2026)
-- Dia 3. Importar datos en R, Normalización y Corrección por batch (21 de abril, 2026)
-- Dia 4. DEG con STAR y DESeq2 (23 de abril, 2026)
+- Dia 3. Pipelines de Kallisto y STAR, Importación datos en R (21 de abril, 2026)
+- Dia 4. Normalización y Corrección por batch effect 🪲 (23 de abril, 2026)
 - Dia 5. DEG con kallisto y DESeq2 (28 de abril, 2026)
 - Dia 6. GSEA - Análisis funcional de los genes diferencialmente expresados (30 de abril, 2026)
 - Entrega de Reporte final (22 de mayo, 2026) - [Rúbrica](https://docs.google.com/document/d/1_RQxoMQaVy8SgOsA7_L_BkKbBXtABTt2pbwAaIX8DcE/edit?usp=sharing)
@@ -77,11 +77,14 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 **Subir en la tarea de Google Classroom**
 
-### Dia 3. Importar datos en R, Normalización y Corrección por batch effect 🪲
+### Dia 3. Pipelines de Kallisto y STAR, Importación datos en R
 
 - Fecha: martes 21 de abril, 2026
 - Presentación:
-    - [Importar datos en R, Normalización y Corrección por batch / DEG con DESeq2](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Pipelines de Kallisto](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Importación de salida de kallisto en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Pipelines de STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Importación de salida de STAR en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
 - Scripts: https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia3/scripts/
 - Lecturas y cursos recomendados:
     - [Metodos de normalizacion](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
@@ -89,7 +92,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
     - [End-to-end RNA-Seq workflow](https://www.bioconductor.org/help/course-materials/2015/CSAMA2015/lab/rnaseqCSAMA.html)
     - [Transformation, Normalization, and Batch Effect Removal](https://bio-protocol.org/exchange/protocoldetail?id=4462&type=1)
 
-### Dia 4. DEG con STAR y DESeq2
+### Dia 4. Normalización y Corrección por batch effect 🪲
 
 - Fecha: jueves 23 de abril, 2026
 - Presentación:

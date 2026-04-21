@@ -1,0 +1,90 @@
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190676_1_trimmed.fq.gz
+                             ./data/processed/SRR27190676_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 41,851,065 reads, 24,084,235 reads pseudoaligned
+[quant] estimated average fragment length: 166.865
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,382 rounds
+
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190684_1_trimmed.fq.gz
+                             ./data/processed/SRR27190684_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 46,822,186 reads, 41,193,321 reads pseudoaligned
+[quant] estimated average fragment length: 165.026
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,498 rounds
+
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190685_1_trimmed.fq.gz
+                             ./data/processed/SRR27190685_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 47,674,428 reads, 41,463,344 reads pseudoaligned
+[quant] estimated average fragment length: 165.926
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,567 rounds
+
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190700_1_trimmed.fq.gz
+                             ./data/processed/SRR27190700_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 44,351,028 reads, 40,077,646 reads pseudoaligned
+[quant] estimated average fragment length: 164.449
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,415 rounds
+
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190708_1_trimmed.fq.gz
+                             ./data/processed/SRR27190708_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 45,551,513 reads, 40,382,714 reads pseudoaligned
+[quant] estimated average fragment length: 166.458
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,704 rounds
+
+
+[quant] fragment length distribution will be estimated from the data
+[index] k-mer length: 31
+[index] number of targets: 532,617
+[index] number of k-mers: 185,494,014
+[index] number of equivalence classes: 2,090,632
+[quant] running in paired-end mode
+[quant] will process pair 1: ./data/processed/SRR27190710_1_trimmed.fq.gz
+                             ./data/processed/SRR27190710_2_trimmed.fq.gz
+[quant] finding pseudoalignments for the reads ... done
+[quant] processed 38,471,506 reads, 32,678,252 reads pseudoaligned
+[quant] estimated average fragment length: 169.109
+[   em] quantifying the abundances ... done
+[   em] the Expectation-Maximization algorithm ran for 1,301 rounds
+

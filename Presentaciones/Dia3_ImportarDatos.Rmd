@@ -1,6 +1,6 @@
 ---
 title: "Workshop: Análisis de datos de RNA-Seq"
-subtitle: "⚔<br/>Importar datos en R, Normalización y Corrección por batch"  
+subtitle: "⚔<br/>Pipelines de Kallisto y STAR, Importación datos en R"  
 author: "Dra. Evelia Coss"
 date: "21/04/2026"
 output:
@@ -114,7 +114,7 @@ style_duo_accent(
 ```
 
 class: title-slide, middle, center
-background-image: url(figures/Clases_RNASeq_Slide1.png) 
+background-image: url(figures/HelloWorld_slide1.png)
 background-position: 90% 75%, 75% 75%, center
 background-size: 1210px,210px, cover
 
@@ -132,20 +132,14 @@ background-size: 1210px,210px, cover
 
 # Contenido de la clase
 
-
 - 1) Fuentes de error
 
-- 2) Pipelines Kallisto y STAR
+- 2) Pipelines `Kallisto` y `STAR`
 
-- 3) Importar datos de kallisto a R
+- 3) Importar datos de `kallisto` a R
 
-- 4) Importar datos de STAR a R
+- 4) Importar datos de `STAR` a R
 
-- 5) Normalización de los datos
-
-- 6) Detección y corrección por batch effect
-
-- 7) DEG con DESeq2
 
 ---
 
@@ -226,8 +220,541 @@ Todas las plataformas tienen cierto de nivel de error que se debe tomar en cuent
 
 class: inverse, center, middle
 
-`r fontawesome::fa("terminal", height = "3em")`
-# 2. [Pipelines Kallisto y STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia2_QCAlineamiento.html#41)
+`r fontawesome::fa("circle-nodes", height = "3em")`
+# 2. Pipelines de kallisto: Ensamblaje de **transcriptoma guiado**
+
+---
+
+## [**Kallisto**](https://pachterlab.github.io/kallisto/manual)
+
+.pull-left[
+- Se basa en la probabilidad de asignación correcta de las lecturas a un transcrito.
+
+- **Pseudoalineamiento**.
+
+- Es rápido.
+
+- Se puede ejecutar el programa desde tu computadora.
+
+- Se basa en los grafos de Brujin Graph (T-DBG) .
+
+- Los Nodos (v1,v2,v3) son *k-mers*.
+
+- Omite pasos redundantes en el T-DBG.
+
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_kallisto.png")
+```
+]
+
+.right[.footnote[
+[Bray, *et al*. 2016. *Nature*](https://www.nature.com/articles/nbt.3519)]]
+
+---
+
+## Pipeline con **Kallisto**: Ensamblaje de transcriptoma guiado
+
+- Input:
+  + Transcriptoma de referencia
+  + Archivos `fastq` provenientes de la secuenciación
+
+- Pipeline general:
+  + Paso 1. Selección y preparación del transcriptoma de referencia
+  + Paso 2. Indexar el transcriptoma de referencia creando un índice con Kallisto
+  + Paso 3. Pseudoalineamiento con Kallisto
+  
+---
+
+## Transcriptoma de referencia en Ensembl
+
+Yo usare los siguientes:
+
+- [Homo_sapiens.GRCh38.cdna.all.fa.gz](https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz) → todos los transcritos codificantes (con isoformas y UTRs).
+- [Homo_sapiens.GRCh38.ncrna.fa.gz](https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz) → todos los transcritos no codificantes (lncRNA, miRNA, snoRNA, etc.).
+
+La idea es **unirlos en un solo FASTA** para que *Kallisto* tenga un transcriptoma completo (codificante + no codificante).
+
+---
+
+## Descarga del Transcriptoma de referencia en Ensembl
+
+Me fije que fuera el genoma de referencia [GRCh38.p14/hg38](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) (Feb 3, 2022) (FASTA) proveniente de NCBI. Y Seleccione donde dice `Download FASTA`:
+
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/ensembl_human.png")
+```
+
+---
+
+## Descarga del Transcriptoma de referencia en Ensembl
+
+Posteriormente se desplego la [siguiente ventana](https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/) y seleccione las carpetas `cdna` y `ncrna`:
+
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/ensembl_reference.png")
+```
+
+---
+
+### Pipeline con **Kallisto**
+
+### Paso 1. Descargar ambos archivos con `wget`
+
+```{bash, eval=F}
+cd reference
+# Genes codificantes
+wget https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
+# Genes no codificantes
+wget https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz
+```
+
+### Paso 2. Unirlos en un solo archivo FASTA
+
+```{bash, eval=F}
+cat Homo_sapiens.GRCh38.cdna.all.fa.gz Homo_sapiens.GRCh38.ncrna.fa.gz > Homo_sapiens.GRCh38.transcripts.fa.gz
+```
+
+Aquí simplemente concatenas ambos archivos comprimidos.
+
+---
+
+### Pipeline con **Kallisto**
+
+### Paso 3. Generar el index con Kallisto
+
+```{bash, eval = F}
+# Crear la carpeta
+mkdir kallisto_quant
+# Cargar modulo
+module load kallisto/0.45.0
+# Generar index de kallisto
+kallisto index -i transcripts.idx Homo_sapiens.GRCh38.transcripts.fa.gz
+```
+
+Argumentos:
+
+- `-i`: nombre del archivo de salida, i.e., indice
+- `Input`: At_stringm_seq_v2.fasta, transcriptoma de referencia
+
+Si quieren intentarlo con *Arabidopsis thaliana* les dejo el curso que di en 2023 - [RNAseq_classFEB2023](https://github.com/EveliaCoss/RNAseq_classFEB2023/tree/main/RNA_seq).
+
+---
+
+### Pipeline con **Kallisto**
+
+### Paso 4. Pseudoalineamiento con Kallisto
+
+.pull-left[
+- ***Single-end***
+
+```{bash, eval = F}
+# Single-end
+for file in ./data/processed/*_trimmed.fq.gz
+do
+  base=$(basename "$file" _trimmed.fq.gz)   # Ej: SRR27190676_1
+  kallisto quant --index ./align/kallisto/transcripts.idx \
+                 --output-dir ./align/kallisto/kallisto_quant/${base} \
+                 --threads 12 \
+                 --single -l 200 -s 20 "$file"
+done
+
+# Nota: Debes poner --single -l -s, obligatorio.
+```
+
+Puedes tener este ERROR porque no colocas `--single -l -s`,
+`Error: fragment length mean and sd must be supplied for single-end reads using -l and -s`.
+]
+
+.pull-right[
+- ***Paired-end***
+```{bash, eval = F}
+# Paired-end
+for file in ./data/processed/*1_trimmed.fq.gz
+do
+  base=$(basename "$file" _1_trimmed.fq.gz)   # Ej: SRR27190676
+  file_1="./data/processed/${base}_1_trimmed.fq.gz"
+  file_2="./data/processed/${base}_2_trimmed.fq.gz"
+  
+  kallisto quant --index ./align/kallisto/transcripts.idx \
+                 --output-dir ./align/kallisto/kallisto_quant/${base} \
+                 --threads 12 "$file_1" "$file_2"
+done
+```
+
+]
+
+---
+
+### **Kallisto**
+
+## Script y ejecución en el cluster
+
+  - [`kallisto_align.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/kallisto_align.sh)
+
+## Salida
+
+- Cada par de FASTQ genera su propia carpeta con resultados (`abundance.h5, abundance.tsv, run_info.json`).
+
+- Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/out_logs/trimm_1221.err) cómo se ve la ejecución de este comando.
+
+---
+
+## Como sabemos que ya termino **Kallisto**
+
+```
+ls kallisto_quant/*
+kallisto_quant/transcripts.idx
+
+kallisto_quant/SRR1606325:
+abundance.h5  abundance.tsv  run_info.json
+
+kallisto_quant/SRR1608973:
+abundance.h5  abundance.tsv  run_info.json
+
+kallisto_quant/SRR1608977:
+abundance.h5  abundance.tsv  run_info.json
+
+kallisto_quant/SRR1609063:
+abundance.h5  abundance.tsv  run_info.json
+
+kallisto_quant/SRR1609064:
+abundance.h5  abundance.tsv  run_info.json
+
+kallisto_quant/SRR1609065:
+abundance.h5  abundance.tsv  run_info.json
+```
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("align-center", height = "3em")`
+# 3. Alineamiento con el genoma de referencia mediante **STAR**
+
+---
+
+## Funcionamiento de **STAR**
+
+Se ha demostrado que STAR tiene una *alta precisión y supera a otros alineadores* por un factor de más de 50 en velocidad de mapeo, pero consume mucha memoria. El algoritmo logra este mapeo altamente eficiente mediante un proceso de dos pasos:
+
+- Búsqueda de semillas
+- Agrupación, unión y puntuación
+
+---
+
+.pull-left[
+## Búsqueda de semillas
+
+- **Lectura** → búsqueda en genoma: STAR toma cada lectura y busca la coincidencia más larga exacta en el genoma de referencia.
+
+- **Prefijo Mapeable Máximo (MMP)**: identifica la secuencia más larga que coincide exactamente; cada MMP se denomina “semilla” (seed1, seed2…).
+
+- **Proceso iterativo**: después de mapear la primera semilla, STAR vuelve a buscar en la parte no alineada de la lectura para encontrar el siguiente MMP.
+
+- **Resultado**: la lectura se reconstruye como una serie de semillas que juntas permiten el alineamiento completo, incluso si la lectura abarca intrones o regiones complejas.
+
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width='60%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step1.png")
+```
+
+]
+
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+---
+
+**Si STAR no encuentra una secuencia que coincida exactamente** con cada parte de la lectura debido a desajustes o inserciones/deleciones, los MMP anteriores se extenderán.
+
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step3.png")
+```
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+
+---
+
+**Si la extensión no produce una buena alineación**, la secuencia de mala calidad o la secuencia adaptadora (u otra secuencia contaminante) se recortará suavemente.
+
+```{r, echo=FALSE, out.width='60%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step4.png")
+```
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+---
+
+.pull-left[
+## Agrupación, unión y puntuación
+Las semillas individuales se unen para crear una lectura completa, agrupándolas primero según su proximidad a un conjunto de semillas "ancla", es decir, semillas que no se mapean en múltiples direcciones.
+
+Luego, las semillas se unen en función de la mejor alineación para la lectura (puntuación basada en desajustes, inserciones/deleciones, huecos, etc.).
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/alignment_STAR_step5.png")
+```
+
+]
+
+.footnote[.black[Información proveniente de: 
+[Introducción a la secuenciación de ARN mediante computación de alto rendimiento - ARCHIVADO](https://hbctraining.github.io/Intro-to-rnaseq-hpc-O2/lessons/03_alignment.html)
+]]
+
+---
+
+## Pipeline de **STAR**: genoma de referencia
+
+#### Seguiremos 2 sencillos pasos
+
+1. Indexar el genoma de referencia creando un índice de STAR
+
+2. Alinear y contar con STAR
+
+[Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf)
+
+**STAR** nos permite, además de alinear las lecturas, hacer un conteo en el mismo paso. El paso de conteo, puede ser separado y con otras herramientas, pero en esta clase, te enseñaré la forma sencilla en la que STAR también puede contar.
+
+> **NOTA: Para obtener la matriz de cuentas, NECESITAMOS UN ARCHIVO DE ANOTACIÓN.**
+
+---
+
+## Genoma de referencia
+
+- **Genoma de referencia [GRCh38.p14/hg38](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) (Feb 3, 2022) (FASTA)** - Proveniente de NCBI
+
+Este archivo deberá estar contenido en la carpeta `reference/`. Puedes usar el genoma de referencia contenido en el clúster con ayuda de un symlink.
+
+```{bash, eval=FALSE}
+ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz .
+```
+
+> Es mejor crear **enlaces simbólicos (symlinks)** en vez de copiar cada archivo, ya que permite ahorrar mucho espacio en el disco al evitar la multiplicación de copias fisicas en el disco duro del mismo archivo.
+
+---
+
+## ¿Qué es un archivo de anotación?
+
+Un archivo de anotación [**GFF**](https://genome.ucsc.edu/FAQ/FAQformat.html#format3) (General Feature File) o [**GTF**](https://genome.ucsc.edu/FAQ/FAQformat.html#format4) (Gene Transfer Format) es un formato de archivo estándar utilizado en bioinformática para almacenar y representar información genómica y de anotación para diversas características dentro de un *genoma*, como **genes, transcritos, exones y otros elementos genómicos**.
+
+.pull-left[
+Utilizaremos el Archivo de anotación de **GCF_000001405.40-RS_2025_08 de RefSeq** junto con el genoma de referencia para poder encontrar las ubicaciones de genes, transcritos, etc.
+
+- **Archivo de anotación (GTF)** - Proveniente de NCBI -  [GCF_000001405.40-RS_2025_08](https://www.ncbi.nlm.nih.gov/datasets/gene/GCF_000001405.40/). Se reportan 68,408 genes
+]
+
+.pull-right[
+
+Crear un symlink: 
+
+```{bash, eval=FALSE}
+ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.gtf .
+```
+]
+
+---
+
+### [GCF_000001405.40-RS_2025_08](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/): Genes y Transcritos
+
+- 20,599 genes codificantes (10.7%)
+- 22,599 genes no codificantes (11.7%)
+- 17,4917 pseudogenes (9.1%)
+- 2,812 small-RNAs (1.5%)
+- 129,062  Otros (67%) (immunoglobulin, biological region)
+
+```{r, echo=FALSE, out.width='80%', fig.align='center', fig.pos='top'}
+knitr::include_graphics("figures/biotypes.png")
+```
+
+.left[.footnote[.black[
+Imagen proveniente de [NCBI](https://www.ncbi.nlm.nih.gov/datasets/taxonomy/9606/)
+]]]
+
+---
+
+## Descargar el archivo de anotación
+
+Pide un nodo de prueba, descarga el archivo de anotación de tu especie y descomprime el archivo. Este ejemplo es para [*Homo sapiens*](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/):
+
+```{bash, eval= F}
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/#:~:text=GCF_000001405.40_GRCh38.p14_genomic.gtf.gz
+```
+
+## Tipos de archivos
+
+Siempre hay un [README](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/README.txt) en los archivos que nos permitira saber más információn sobre los archivos:
+
+- `*_genomic.fna.gz`: Genoma de referencia en formato FASTA (`.fna` o `.fa`) 
+- `*_genomic.gtf.gz`: Archivo de anotación en formato GTF.
+
+---
+
+## Pausa: Hasta este punto debemos de contar con los siguientes archivos
+
+```{bash, eval = F}
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
+├── data/processed
+│   ├── SRR12363092_1_trimmed.fq.gz
+│   ├── SRR12363092_1_unpaired.fq.gz
+...
+├── reference/
+│   ├── GCF_000001405.40_GRCh38.p14_genomic.fna.gz # Genoma de referencia
+│   ├── GCF_000001405.40_GRCh38.p14_genomic.gtf.gz # Archivo de anotacion
+...
+```
+
+---
+
+## ¿Qué es indexar un genoma de referencia?
+
+Es una forma computacional de crear una "estructura de datos" para el genoma de referencia, mediante **índices**, de tal forma que podramos **accesar a las partes del mismo** de una forma más eficiente al alinear. 
+
+El genoma de referencia sirve como plantilla contra la cual se realizan diversos análisis genómicos, como mapeo de lecturas, llamado de variantes y cuantificación de la expresión génica. 
+
+**La indexación mejora la velocidad y la eficiencia de estos análisis** al permitir que el software **ubique y acceda rápidamente** a partes relevantes del genoma.
+
+---
+
+### Paso 1. Crear un índice de STAR
+
+Carguemos el módulo de STAR
+
+```{bash, eval = F}
+module load star/2.7.9a
+```
+
+Creamos un directorio para guardar el indice
+
+```{bash, eval = F}
+mkdir STAR_index
+```
+
+El genoma debe estar descomprimido SI NO, te dará el siguiente error:
+
+```
+EXITING because of INPUT ERROR: the file format of the genomeFastaFile: ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz is not fasta: the first character is '' (31), not '>'.
+ Solution: check formatting of the fasta file. Make sure the file is uncompressed (unzipped).
+ ```
+
+---
+
+## Descomprimir archivos `.gz`
+
+```{bash, eval=F}
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026
+gunzip ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+gunzip ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf.gz
+```
+
+---
+
+El script para crear el indice es el siguiente:
+
+```{bash, eval = F}
+STAR --runThreadN 30 \
+--runMode genomeGenerate \
+--genomeDir /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index \
+--genomeFastaFiles ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna \
+--sjdbGTFfile ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf \
+--sjdbOverhang 149
+```
+
+Entremos al 
+[Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) para entender las opciones
+
+---
+
+## Script y ejecución en el cluster
+
+Si desean ver como se analizaron los datos empleando el programa `STAR` para realizar el *index del genoma* dentro del cluster DNA, les dejo los siguientes scripts:
+
+  - [`STAR_index.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/scripts/STAR_index.sh) 
+
+Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/out_logs/star_index_1330.out) cómo se ve la ejecución de este comando.
+
+---
+
+## Paso 2. Alinear y **CONTAR** con STAR
+
+Si revisamos el [Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) notarás que hay una opción para **Contar lecturas por genes** (Sección 8). Con la opción de `--quantMode`. De hecho, estas cuentas coinciden con las cuentas que nos daría `htseq-count`
+
+```{bash, eval = F}
+index=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/STAR/STAR_index
+FILES=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/*_1_trimmed.fq.gz
+for f in $FILES
+do
+    base=$(basename "$f" _1_trimmed.fq.gz)   # Ej: SRR27190676
+    read1="/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/${base}_1_trimmed.fq.gz"
+    read2="/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/${base}_2_trimmed.fq.gz"
+
+    echo "Procesando muestra: $base"
+
+    STAR --runThreadN 12 \
+         --genomeDir $index \
+         --readFilesIn "$read1" "$read2" \
+         --outSAMtype BAM SortedByCoordinate \
+         --quantMode GeneCounts \
+         --readFilesCommand zcat \
+         --outFileNamePrefix /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/STAR/STAR_output/${base}.
+done
+```
+
+Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia2/out_logs/star_align_1348.out) cómo se ve la ejecución de este comando.
+
+---
+
+### Las carpetas contenidas por equipo deberan ser:
+
+```{bash, eval = F}
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026    
+├── data/raw          # raw Data
+├── data/processed    # Salida del Trimming
+├── reference     # Genoma de Referencia y Archivo de anotacion del organismo (GTF)
+├── metadata.csv  # Metadata
+├── quality1      # FastQC y multiQC de raw Data
+├── quality2      # FastQC y multiQC de los datos despues del Trimming
+├── results       # Resultados obtenidos de DEG
+├── scripts       # Todos los scripts
+├── align/STAR/STAR_index    # Index del genoma de referencia
+├── align/STAR/STAR_output   # Salida de STAR, cuentas y BAM
+└── adapters/TruSeq3-PE-2.fa # Adaptadores PE de Illumina
+
+```
+
+### SCRIPTS empleados en la clase
+
+Todos los scripts usados en esta clase están en el [GitHub](https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia2/scripts)
+
+---
+
+## RNA-seq Nexflow
+
+Se pueden fusionar múltiples programas en un solo flujo de trabajo utilizando **Nextflow**, una herramienta diseñada para la **orquestación y automatización** de pipelines en bioinformática y otras disciplinas computacionales. 
+
+Además, su compatibilidad con **contenedores** (Docker, Singularity) y **sistemas de gestión de colas** (SGE, SLURM) lo convierte en una solución flexible para proyectos complejos que involucran múltiples herramientas y formatos de datos.
+
+```{r, echo=FALSE, out.width='80%', fig.align='center', fig.pos='top'}
+knitr::include_graphics("figures/rnaseq_nexflow.png")
+```
+
+
+.left[.footnote[.black[
+Imagen proveniente de [nf-core/rnaseq](https://nf-co.re/rnaseq/3.14.0/)
+]]]
 
 ---
 
@@ -262,7 +789,7 @@ R
 class: inverse, center, middle
 
 `r fontawesome::fa("circle-nodes", height = "3em")`
-# 3. Importar cuentas de `kallisto` a R
+# 4. Importar cuentas de `kallisto` a R
 
 ---
 
@@ -426,7 +953,7 @@ names(txi)
 class: inverse, center, middle
 
 `r fontawesome::fa("terminal", height = "3em")`
-# 4. Importar cuentas de `STAR` a R
+# 5. Importar cuentas de `STAR` a R
 
 ---
 
@@ -520,233 +1047,10 @@ En ENA/EBI, puedes obtener la información relacionada con el estudio si le das 
 
 ---
 
-class: inverse, center, middle
-
-`r fontawesome::fa("laptop-code", height = "3em")`
-# 3. Normalización de datos
-
----
-
-## Normalización de datos
-### ¿Por qué es necesario normalizar?
-
-Nuestros datos están sujetos a **sesgos técnicos** y **biológicos** que provocan **variabilidad** en las cuentas.
-
-Si queremos hacer **comparaciones de niveles de expresión entre muestras** es necesario *ajustar* los datos tomando en cuenta estos sesgos.
-
-- Análisis de expresión diferencial
-
-- Visualización de datos
-
-En general, siempre que estemos comparando expresión entre nuestros datos.
-
----
-.pull-left[
-## Métodos de normalización
-
-Ejemplo: **DESEq2**
-
-```{r, echo=FALSE, out.width='120%', fig.align='center'}
-knitr::include_graphics("figures/pipeline_normalizacion.png")
-```
-
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='120%', fig.align='center'}
-knitr::include_graphics("figures/normalization.png")
-```
-]
-
-
-.left[.footnote[.black[
-Revisa el [manual de DESEq](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts)
-]]]
-
----
-
-## Métodos de normalización
-
-.pull-left[
-
-#### **Counts per million (CPM)** o **Reads per million (RPM) **  
-
-`CPM o RPM = C * 10^6/N`
-
-- C: Numero de reads mapeados en el gen
-- N: Numero total de reads mapeados
-
-Ejemplo: Si tenemos 5 millones de reads o lecturas (M). Y la mayoría  de ellos alinean con el genoma (4 M). Encontramos un gen con 5000 reads. 
-
-- ¿Cuál será su valor en CPM? 
-
-`CPM o RPM = (5000 * 10^6) / (4 * 10^6) = 1250`
-
-]
-
-.pull-right[
-
-> **NOTA:** El CPM no contempla el tamaño del gen en la normalización.   
-
-> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de DESEq2 (rlog o vst) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
-> 
-> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
-]
-
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://www.reneshbedre.com/blog/expression_units.html).
-]]]
-
----
-
-## Empleo de Z-score para graficas
-
-La normalización con **Z-score** transforma los datos para que cada gen tenga una media de 0 y una desviación estándar de 1. Esto permite comparar genes con diferentes niveles de expresión en la misma escala.
-
-> Motivo: Los genes con varianza cero tienen la misma expresión en todas las muestras y no aportan información útil.
-
-.pull-left[
-
-```{r, eval=FALSE}
-# 1) Filtar genes de varianza cero
-var_non_zero <- apply(counts, 1, var) !=0 
-# 2) Aplicar z-score
-filtered_counts <- counts[var_non_zero, ]
-# transponer
-zscores <- t(scale(t(filtered_counts)))
-dim(zscores) #[1] 18782   165
-# 3) convertir a matriz
-zscore_mat <- as.matrix(zscores)
-```
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/SLE_heatmap_zscore.png")
-```
-]
-
-.left[.footnote[.black[
-[Gene expression profiling of dendritic cell tolerance dysfunction in women with Systemic lupus erythematosus, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
-]]]
-
----
-
-## **DESeq2** emplea `size factor` (median of ratios) para normalizar las raw counts
-
-.pull-left[
-Cuando se emplea la funcion `DESeq` internamente estan realizandose los siguientes procesos para **cada gen**:
-
-```{r, eval=FALSE}
-dds <- estimateSizeFactors(dds)
-dds <- estimateDispersions(dds)
-dds <- nbinomWaldTest(dds)
-```
-
-[Manual de DESeq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors)
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/sizefactor.png")
-```
-]
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html).
-]]]
-
----
-
-class: inverse, center, middle
-
-`r fontawesome::fa("terminal", height = "3em")`
-# 4. Detección y corrección por *batch effect*
-
----
-
-# Recordatorio: Corrección por *Batch effect*
-
-Buen diseño experimental con un minimo de 3 Réplicas biológicas, pero aún puede haber variación técnica.
-
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/batch_effect_pca2.png")
-```
-
-.left[.footnote[.black[
-Imagen proveniente de [Hicks, et al. 2015. bioRxiv](https://www.biorxiv.org/content/early/2015/08/25/025528)
-]]]
-
----
-
-## Paquetes para Corrección por Batch effect
-
-Algunos ejemplos:
-
-- funcion [ComBat](https://www.rdocumentation.org/packages/sva/versions/3.20.0/topics/ComBat) del paquete [SVA](https://www.bioconductor.org/packages/release/bioc/html/sva.html)
-
-- funcion [removeBatchEffect](https://web.mit.edu/~r/current/arch/i386_linux26/lib/R/library/limma/html/removeBatchEffect.html) del paquete [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
-
-- Paquete [batchman](https://cran.r-project.org/web/packages/batchtma/vignettes/batchtma.html)
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://evayiwenwang.github.io/Managing_batch_effects/adjust.html#correcting-for-batch-effects).
-]]]
-
----
-
-# Detección de *batch effect*
-
-## Análisis de Componentes Principales (PCA)
-
-.pull-left[
-
-Es una herramienta para el *análisis exploratorio* de los datos que permite visualizar la **variación presente de un set de datos** con muchas **variables**.
-
-En X es la mayor proporción de la varianza.
-En Y la menor variabilidad.
-
-**Cada dimensión o componente principal** generado por PCA será una **combinación lineal de las variables originales.**
-
-PCA **reduce la dimensionalidad** pero **NO reduce el número de variables en los datos**.
-
-Para más información visita [Managing batch effects](https://evayiwenwang.github.io/Managing_batch_effects/detect.html).
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/pca_example.png")
-```
-]
-
----
-
-## Ejemplo: PCA + densidad
-
-.pull-left[
-
-```{r, eval=F}
-library(cowplot)
-library(dplyr)
-library(ggplot2)
-```
-
-Codigo proveniente de [Stackoverflow](https://stackoverflow.com/questions/73554215/how-to-add-density-plot-per-component-in-pca-plot-in-r).
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/pca_example2.png")
-```
-]
-
----
-
 class: center, middle
 
 `r fontawesome::fa("code", height = "3em")`
 # Jueves 23 de abril 2026  
-## 
+## Normalización de datos, Corrección de batch effect, Análisis de expresión diferencial 
 
 Gracias por tu atención, respira y coméntame tus dudas. 
