@@ -25,7 +25,7 @@ Les comparto el [plan de estudios](https://docs.google.com/spreadsheets/d/1E_V69
 
 - Dia 1. Aspectos generales de RNA-Seq / Control de calidad de los datos (14 de abril, 2026)
 - Dia 2. Diversos pipeline para Alineamiento, ensamblaje y conteo de reads (16 de abril, 2026)
-- Dia 3. Pipelines de Kallisto y STAR, Importación datos en R (21 de abril, 2026)
+- Dia 3. Fuentes de error, Pipelines de Kallisto y STAR, Importación datos en R (21 de abril, 2026)
 - Dia 4. Normalización y Corrección por batch effect 🪲 (23 de abril, 2026)
 - Dia 5. DEG con kallisto y DESeq2 (28 de abril, 2026)
 - Dia 6. GSEA - Análisis funcional de los genes diferencialmente expresados (30 de abril, 2026)
@@ -77,14 +77,15 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 **Subir en la tarea de Google Classroom**
 
-### Dia 3. Pipelines de Kallisto y STAR, Importación datos en R
+### Dia 3. Fuentes de error, Pipelines de Kallisto y STAR, Importación datos en R
 
 - Fecha: martes 21 de abril, 2026
 - Presentación:
-    - [Pipelines de Kallisto](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
-    - [Importación de salida de kallisto en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
-    - [Pipelines de STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
-    - [Importación de salida de STAR en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Fuentes de error](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    - [Pipelines de Kallisto](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#9)
+    - [Importación de salida de kallisto en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#42)
+    - [Pipelines de STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#20)
+    - [Importación de salida de STAR en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#51)
 - Scripts: https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia3/scripts/
 - Lecturas y cursos recomendados:
     - [Metodos de normalizacion](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
