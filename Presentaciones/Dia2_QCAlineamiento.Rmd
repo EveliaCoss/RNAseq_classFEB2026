@@ -2,7 +2,7 @@
 title: "Workshop: Análisis de datos de RNA-Seq"
 subtitle: "⚔<br/>Alineamiento y conteo de RNA-seq"  
 author: "Dra. Evelia Coss, Sofia Salazar y Diego Ramirez"
-date: "16/04/2025"
+date: "16/04/2026"
 output:
   xaringan::moon_reader:
     css: 
@@ -589,7 +589,7 @@ Corramos `fastqc` y `multiqc` de nuevo
 
 ```{bash, eval = F}
 mkdir quality2
-for file in /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/*.fq.gz; do fastqc $file -o /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/quality2; done
+for file in /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/*.fq.gz; do fastqc $file -o /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/quality2; done
 ```
 
 ```{bash, eval = F}
@@ -612,8 +612,12 @@ Si desean ver como se analizaron los datos empleando los programas `FastQC` y `m
 
 ```{bash, eval = F}
 /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
-├── data
+├── data/raw
 │   ├── SRR12363092_1.fastq.gz
+...
+├── data/processed
+│   ├── SRR12363092_1_trimmed.fq.gz
+│   ├── SRR12363092_1_unpaired.fq.gz
 ...
 ├── quality1
 │   ├── multiqc_data
@@ -628,9 +632,6 @@ Si desean ver como se analizaron los datos empleando los programas `FastQC` y `m
 │   ├── SRR12363092_1_unpaired.fq_fastqc.html
 │   ├── SRR12363092_2_trimmed.fq_fastqc.html
 ...
-├── TRIM_results
-│   ├── SRR12363092_1_trimmed.fq.gz
-│   ├── SRR12363092_1_unpaired.fq.gz
 ├── scripts/
 ```
 
@@ -895,10 +896,13 @@ Si quieren intentarlo con *Arabidopsis thaliana* les dejo el curso que di en 202
 
 ```{bash, eval = F}
 # Single-end
-for file in ./data/processed//*trimmed.fq.gz
+for file in ./data/processed/*_trimmed.fq.gz
 do
-  clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//;s/\.fastq\.gz//;s/\.fq\.gz//')   # Nombre de la carpeta de salida, mismo nombre de SRA
-  kallisto quant --index ./kallisto_quant/transcripts.idx --output-dir ./kallisto_quant/${clean} --single -l 200 -s 20  --threads=12 $file
+  base=$(basename "$file" _trimmed.fq.gz)   # Ej: SRR27190676_1
+  kallisto quant --index ./align/kallisto/transcripts.idx \
+                 --output-dir ./align/kallisto/kallisto_quant/${base} \
+                 --threads 12 \
+                 --single -l 200 -s 20 "$file"
 done
 
 # Nota: Debes poner --single -l -s, obligatorio.
@@ -912,13 +916,15 @@ Puedes tener este ERROR porque no colocas `--single -l -s`,
 - ***Paired-end***
 ```{bash, eval = F}
 # Paired-end
-for file in ./data/processed/*_1.fq.gz                                                         # Read1
+for file in ./data/processed/*1_trimmed.fq.gz
 do
-  clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//')         # Nombre de la carpeta de salida, mismo nombre de SRA
-  file_2=${clean}_2.fastq.gz                                           # Read2
-  kallisto quant --index ./reference/transcripts.idx \
-               --output-dir ./kallisto_quant/${clean} \
-               --threads 12 ${file} ${file_2}
+  base=$(basename "$file" _1_trimmed.fq.gz)   # Ej: SRR27190676
+  file_1="./data/processed/${base}_1_trimmed.fq.gz"
+  file_2="./data/processed/${base}_2_trimmed.fq.gz"
+  
+  kallisto quant --index ./align/kallisto/transcripts.idx \
+                 --output-dir ./align/kallisto/kallisto_quant/${base} \
+                 --threads 12 "$file_1" "$file_2"
 done
 ```
 
@@ -930,7 +936,7 @@ done
 
 ## Script y ejecución en el cluster
 
-  - [`kallisto_align.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/trimm_adapters.sh)
+  - [`kallisto_align.sh`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia2/scripts/kallisto_align.sh)
 
 ## Salida
 
@@ -1100,7 +1106,7 @@ Utilizaremos el Archivo de anotación de **GCF_000001405.40-RS_2025_08 de RefSeq
 Crear un symlink: 
 
 ```{bash, eval=FALSE}
-ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.gtf.gz .
+ln -s /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/GCF_000001405.40_GRCh38.p14_genomic.gtf .
 ```
 ]
 
@@ -1145,11 +1151,9 @@ Siempre hay un [README](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405
 
 ```{bash, eval = F}
 /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/
-├── data/
-│   ├── SRR12363092_1.fastq.gz
-│   ├── SRR12363092_2.fastq.gz
-│   ├── SRR12363093_1.fastq.gz
-│   ├── SRR12363093_2.fastq.gz
+├── data/processed
+│   ├── SRR12363092_1_trimmed.fq.gz
+│   ├── SRR12363092_1_unpaired.fq.gz
 ...
 ├── reference/
 │   ├── GCF_000001405.40_GRCh38.p14_genomic.fna.gz # Genoma de referencia
@@ -1183,14 +1187,33 @@ Creamos un directorio para guardar el indice
 mkdir STAR_index
 ```
 
+El genoma debe estar descomprimido SI NO, te dará el siguiente error:
+
+```
+EXITING because of INPUT ERROR: the file format of the genomeFastaFile: ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz is not fasta: the first character is '' (31), not '>'.
+ Solution: check formatting of the fasta file. Make sure the file is uncompressed (unzipped).
+ ```
+
+---
+
+## Descomprimir archivos `.gz`
+
+```{bash, eval=F}
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026
+gunzip ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz
+gunzip ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf.gz
+```
+
+---
+
 El script para crear el indice es el siguiente:
 
 ```{bash, eval = F}
 STAR --runThreadN 30 \
 --runMode genomeGenerate \
 --genomeDir /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index \
---genomeFastaFiles /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/hg38.fa \
---sjdbGTFfile /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/reference/gencode.v47.annotation.gtf.gz \
+--genomeFastaFiles ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna \
+--sjdbGTFfile ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf \
 --sjdbOverhang 149
 ```
 
@@ -1214,17 +1237,23 @@ Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practic
 Si revisamos el [Manual de STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf) notarás que hay una opción para **Contar lecturas por genes** (Sección 8). Con la opción de `--quantMode`. De hecho, estas cuentas coinciden con las cuentas que nos daría `htseq-count`
 
 ```{bash, eval = F}
-index=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_index
-FILES=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/*_1_trimmed.fq.gz
+index=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/STAR/STAR_index
+FILES=/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/*_1_trimmed.fq.gz
 for f in $FILES
 do
-    base=$(basename $f _1_trimmed.fq.gz)
-    echo $base
-    STAR --runThreadN 12 --genomeDir $index --readFilesIn $f /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/TRIM_results/$base"_2_trimmed.fq.gz" \
-    --outSAMtype BAM SortedByCoordinate \
-    --quantMode GeneCounts \
-    --readFilesCommand zcat \
-    --outFileNamePrefix /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/STAR_output/$base
+    base=$(basename "$f" _1_trimmed.fq.gz)   # Ej: SRR27190676
+    read1="/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/${base}_1_trimmed.fq.gz"
+    read2="/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/data/processed/${base}_2_trimmed.fq.gz"
+
+    echo "Procesando muestra: $base"
+
+    STAR --runThreadN 12 \
+         --genomeDir $index \
+         --readFilesIn "$read1" "$read2" \
+         --outSAMtype BAM SortedByCoordinate \
+         --quantMode GeneCounts \
+         --readFilesCommand zcat \
+         --outFileNamePrefix /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/STAR/STAR_output/${base}.
 done
 ```
 
@@ -1235,19 +1264,18 @@ Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practic
 ### Las carpetas contenidas por equipo deberan ser:
 
 ```{bash, eval = F}
-Equipo1
-├── annotation    # Archivo de anotacion del organismo (GFF o GTF)
-├── data          # raw Data
-├── reference     # Genoma de Referencia o symlink del genoma de referencia (opcional)
+Equipo1    
+├── data/raw          # raw Data
+├── data/processed    # Salida del Trimming
+├── reference     # Genoma de Referencia y Archivo de anotacion del organismo (GTF)
 ├── metadata.csv  # Metadata
 ├── quality1      # FastQC y multiQC de raw Data
 ├── quality2      # FastQC y multiQC de los datos despues del Trimming
 ├── results       # Resultados obtenidos de DEG
 ├── scripts       # Todos los scripts
-├── STAR_index    # Index del genoma de referencia
-├── STAR_output   # Salida de STAR, cuentas y BAM
-├── TRIM_results  # Salida del Trimming
-└── TruSeq3-PE-2.fa # Adaptadores PE de Illumina
+├── align/STAR/STAR_index    # Index del genoma de referencia
+├── align/STAR/STAR_output   # Salida de STAR, cuentas y BAM
+└── adapters/TruSeq3-PE-2.fa # Adaptadores PE de Illumina
 
 ```
 

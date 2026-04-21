@@ -15,15 +15,18 @@ module load kallisto/0.45.0
 cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026
 
 # Paso 2. Generar index de kallisto
-kallisto index -i ./align/kallisto/transcripts.idx ./reference/Homo_sapiens.GRCh38.transcripts.fa.gz
+# kallisto index -i ./align/kallisto/transcripts.idx ./reference/Homo_sapiens.GRCh38.transcripts.fa.gz
 
-# Paso 3. Pseudoalineamiento de secuencia Paired-end
-for file in ./data/processed/*_1.fq.gz                                                         # Read1
+# Paso 3. Pseudoalineamiento de secuencia Paired-cend
+for file in ./data/processed/*1_trimmed.fq.gz
 do
-  clean=$(echo $file | sed 's/^.\{15\}//g;s/_trimmed//')         # Nombre de la carpeta de salida, mismo nombre de SRA
-  file_2=${clean}_2.fastq.gz                                           # Read2
+  base=$(basename "$file" _1_trimmed.fq.gz)   # Ej: SRR27190676
+  file_1="./data/processed/${base}_1_trimmed.fq.gz"
+  file_2="./data/processed/${base}_2_trimmed.fq.gz"
+  
   kallisto quant --index ./align/kallisto/transcripts.idx \
-               --output-dir ./kallisto_quant/${clean} \
-               --threads 12 ${file} ${file_2}
+                 --output-dir ./align/kallisto/kallisto_quant/${base} \
+                 --threads 12 "$file_1" "$file_2"
 done
+
 

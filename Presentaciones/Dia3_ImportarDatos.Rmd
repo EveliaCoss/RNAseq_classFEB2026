@@ -1,8 +1,8 @@
 ---
 title: "Workshop: Análisis de datos de RNA-Seq"
 subtitle: "⚔<br/>Importar datos en R, Normalización y Corrección por batch / DEG con DESeq2"  
-author: "Dra. Evelia Coss, Sofia Salazar y Diego Ramirez"
-date: "04/03/2025"
+author: "Dra. Evelia Coss"
+date: "20/04/2026"
 output:
   xaringan::moon_reader:
     css: 

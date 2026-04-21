@@ -11,15 +11,15 @@
 
 ## --- Analisis de Fastqc ---
 # 1. Cargar el módulo de Trimmomatic
-module load kallisto/0.45.0
+module load star/2.7.9a 
 cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026
 
 # Paso 2. Generar index de STAR
 STAR --runThreadN 30 \
 --runMode genomeGenerate \
 --genomeDir ./align/STAR/STAR_index \
---genomeFastaFiles ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna.gz \
---sjdbGTFfile ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf.gz \
+--genomeFastaFiles ./reference/GCF_000001405.40_GRCh38.p14_genomic.fna \
+--sjdbGTFfile ./reference/GCF_000001405.40_GRCh38.p14_genomic.gtf \
 --sjdbOverhang 149
 
 # Parámetro --sjdbOverhang
