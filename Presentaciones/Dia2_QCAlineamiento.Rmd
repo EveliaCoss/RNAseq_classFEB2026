@@ -171,6 +171,7 @@ Imagen proveniente de [mRNA-Seq data analysis workflow](https://biocorecrg.githu
 ]]]
 
 ---
+
 # Contenido de la clase
 
 
@@ -1264,7 +1265,7 @@ Mira [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practic
 ### Las carpetas contenidas por equipo deberan ser:
 
 ```{bash, eval = F}
-Equipo1    
+/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026    
 ├── data/raw          # raw Data
 ├── data/processed    # Salida del Trimming
 ├── reference     # Genoma de Referencia y Archivo de anotacion del organismo (GTF)

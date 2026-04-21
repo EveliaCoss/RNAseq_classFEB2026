@@ -1,0 +1,13 @@
+{
+	"n_targets": 532617,
+	"n_bootstraps": 0,
+	"n_processed": 38471506,
+	"n_pseudoaligned": 32678252,
+	"n_unique": 6425191,
+	"p_pseudoaligned": 84.9,
+	"p_unique": 16.7,
+	"kallisto_version": "0.45.0",
+	"index_version": 10,
+	"start_time": "Mon Apr 20 21:48:31 2026",
+	"call": "kallisto quant --index ./align/kallisto/transcripts.idx --output-dir ./align/kallisto/kallisto_quant/SRR27190710 --threads 12 ./data/processed/SRR27190710_1_trimmed.fq.gz ./data/processed/SRR27190710_2_trimmed.fq.gz"
+}

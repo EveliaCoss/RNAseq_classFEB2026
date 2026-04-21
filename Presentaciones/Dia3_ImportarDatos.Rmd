@@ -1,8 +1,8 @@
 ---
 title: "Workshop: Análisis de datos de RNA-Seq"
-subtitle: "⚔<br/>Importar datos en R, Normalización y Corrección por batch / DEG con DESeq2"  
+subtitle: "⚔<br/>Importar datos en R, Normalización y Corrección por batch"  
 author: "Dra. Evelia Coss"
-date: "20/04/2026"
+date: "21/04/2026"
 output:
   xaringan::moon_reader:
     css: 
@@ -135,13 +135,17 @@ background-size: 1210px,210px, cover
 
 - 1) Fuentes de error
 
-- 2) Importar datos de STAR a R
+- 2) Pipelines Kallisto y STAR
 
-- 3) Normalización de los datos
+- 3) Importar datos de kallisto a R
 
-- 4) Detección y corrección por batch effect
+- 4) Importar datos de STAR a R
 
-- 5) DEG con DESeq2
+- 5) Normalización de los datos
+
+- 6) Detección y corrección por batch effect
+
+- 7) DEG con DESeq2
 
 ---
 
@@ -163,6 +167,7 @@ Existen dos fuentes principales de error:
 Todas las plataformas tienen cierto de nivel de error que se debe tomar en cuenta cuando se está diseñando el experimento. 
 
 ---
+
 # Errores en preparación de la **muestra**
 
 - **Errores del usuario:** Etiquetado incorrecto de la muestra.
@@ -222,7 +227,42 @@ Todas las plataformas tienen cierto de nivel de error que se debe tomar en cuent
 class: inverse, center, middle
 
 `r fontawesome::fa("terminal", height = "3em")`
-# 2. Importar datos de STAR a R
+# 2. [Pipelines Kallisto y STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia2_QCAlineamiento.html#41)
+
+---
+
+## Pasos a seguir para el análisis de los datos de **RNA-Seq**
+
+1. Importar datos en R (archivo de cuentas) + metadatos
+2. Crear una matriz de cuentas con todos los transcriptomas
+3. Crear el archivo `dds` con `DESeq2`
+4. Correr el análisis de Expresión Diferencial de los Genes (DEG)
+5. Normalización de los datos
+6. Detección de *batch effect*
+7. Obtener los resultados de los contraste de DEG
+8. Visualización de los datos
+9. Análisis de términos funcionales (GO terms)
+
+---
+
+## 
+
+```{bash, eval=F}
+# Llamar un nodo interactivo
+itnode 
+# Cargar modulo
+module load r/4.4.1-dmartinez
+# Abrir R
+R
+```
+
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("circle-nodes", height = "3em")`
+# 3. Importar cuentas de `kallisto` a R
 
 ---
 
@@ -231,9 +271,9 @@ class: inverse, center, middle
 .pull-left[
 Los datos provenientes de:
 
-- Salmon
-- Kallisto
-- RSEM
+- `Salmon`
+- `Kallisto`
+- `RSEM`
 
 La libreria empleada en R es:
 
@@ -253,201 +293,81 @@ knitr::include_graphics("figures/importacion_pseudoalineamiento.png")
 
 ---
 
-## Archivos de salida provenientes de **STAR**
+## Archivos de salida de `Kallisto`
 
-.pull-left[
-Utilizaremos los archivos `SRRxxx_ReadsPerGene.out.tab`
-
-```{bash, eval = F}
-cd /mnt/Guanina/bioinfo24/data/Clase_RNASeq2024/STAR_output/
-less SRR12363102_ReadsPerGene.out.tab
 ```
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026
 
-Para salir escribe `q`.
+align/kallisto/kallisto_quant/SRR27190676:
+abundance.h5  abundance.tsv  run_info.json
 
-#### Información contenida
+align/kallisto/kallisto_quant/SRR27190684:
+abundance.h5  abundance.tsv  run_info.json
 
-- **column 1:** gene ID
-- **column 2:** Conteos para RNA-seq sin orientación (unstranded). 
-- **column 3:** Conteos para la primera hebra alineada con el RNA (`htseq-count opción -s yes`)
-- **column 4:** Conteos para la segunda hebra alineada con el RNA (`htseq-count opción -s reverse`)
+align/kallisto/kallisto_quant/SRR27190685:
+abundance.h5  abundance.tsv  run_info.json
 
-]
+align/kallisto/kallisto_quant/SRR27190700:
+abundance.h5  abundance.tsv  run_info.json
 
+align/kallisto/kallisto_quant/SRR27190708:
+abundance.h5  abundance.tsv  run_info.json
 
-.pull-right[
-<img src="figures/out_counts.png", height = "400">
-]
-
----
-
-## Pasos a seguir para el análisis de los datos de **RNA-Seq**
-
-1. Importar datos en R (archivo de cuentas) + metadatos
-2. Crear una matriz de cuentas con todos los transcriptomas
-3. Crear el archivo `dds` con `DESeq2`
-4. Correr el análisis de Expresión Diferencial de los Genes (DEG)
-5. Normalización de los datos
-6. Detección de *batch effect*
-7. Obtener los resultados de los contraste de DEG
-8. Visualización de los datos
-9. Análisis de términos funcionales (GO terms)
-
----
-
-### Pipeline
-
->  Especie: *Mus musculus*, Alineamiento: STAR, Conteo: STAR
-
-- Script [`load_data_inR.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/load_data_inR.R):
-
-  **1)** Importar datos en R (archivo de cuentas) + metadatos y **2)** Crear una matriz de cuentas con todos los transcriptomas. 
-
-- Script [`DEG_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/DEG_analysis.R):
-
-  **3)** Crear el archivo `dds` con `DESeq2`, **4)** Correr el análisis de Expresión Diferencial de los Genes (DEG), **5)** Normalización de los datos, **6)** Detección de batch effect y **7)** Obtener los resultados de los contraste de DEG. Input: [raw_counts.csv](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/raw_counts.csv) y  [metadata.csv](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/metadata.csv)
-
-- Script [`VisualizacionDatos.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/VisualizacionDatos.R):
-
-  **8)** Visualización de los datos
-
-- Script [`GOterms_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia4/scripts/GOterms_analysis.R):
-
-  **9)** Análisis de términos funcionales (GO terms)
-
----
-
-## Aqui estan los datos de ese ejercicio 
-
-Descarga la matriz de cuentas 
-
-- En formato `.csv` [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/raw_counts.csv)
-
-- En formato `.RData` [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/raw_counts.RData)
-
----
-
-## Datos de pacientes con SLE
-
-```{r metadata, echo=FALSE}
-# Crear los datos de la tabla
-data <- data.frame(
-  Descripción = c(
-    "Bioproject",
-    "Especie",
-    "Tipo de bibliotecas",
-    "Método de selección",
-    "Número de transcriptomas",
-    "Número de réplicas biológicas",
-    "Secuenciador empleado",
-    "Profundidad de secuenciación de cada transcriptoma",
-    "Tamaño de las lecturas",
-    "Artículo científico"
-  ),
-  Información = c(
-    'Datos generados en el laboratorio', 
-    '*Homo sapiens*', 
-    '*paired-end*', 
-    'Selección por Poly-A', 
-    '33', 
-    '10 controles y 23 pacientes con SLE', 
-    'NovaSeq de Illumina', 
-    '33 M seq a 53 M seq', 
-    '150 bp', 
-    'Por publicar'
-  )
-)
-
-# Mostrar la tabla en formato sencillo
-knitr::kable(data, 
-             caption = "Tabla 1: Características de las muestras")
+align/kallisto/kallisto_quant/SRR27190710:
+abundance.h5  abundance.tsv  run_info.json
 ```
 
 ---
 
-## Numero de transcriptomas
+## Descargar archivos
 
-.pull-left[
-Calcula el número total de transcriptomas generados considerando que se obtiene una muestra por paciente (**23 pacientes con SLE y 10 controles**) en las siguientes condiciones:
-
-- **1)** Monocitos en estado basal.
-- **2)** Monocitos diferenciados a moDCs.
-- **3)** Monocitos diferenciados a tolDCs.
-- **4)** Una muestra tras la estimulación con IMQ.
-- **5)** Una muestra sin estimulación con IMQ.
-
-¿Cuántos transcriptomas se obtuvieron en total?
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/SLE_desing.jpg")
-```
-]
-
---
-
-**Respuesta:** Tenemos 165 transcriptomas por analizar.
-
----
-
-## Variables a considerar en el análisis de datos
-
-.pull-left[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/SLE_desing2.jpg")
-```
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='50%', fig.align='center'}
-knitr::include_graphics("figures/SLE_flow.jpg")
-```
-]
-
----
-
-### Pipeline a seguir
-
-- Script [`import_txi_inR.R`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia3/scripts/import_txi_inR.R):
-
-  **1)** Importar datos en R (archivo de cuentas) + metadatos y **2)** Crear una matriz de cuentas con todos los transcriptomas. 
-
-- Script [`DEG_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia3/scripts/DEG_analysis.R):
-
-  **3)** Crear el archivo `dds` con `DESeq2`, **4)** Correr el análisis de Expresión Diferencial de los Genes (DEG), **5)** Normalización de los datos, **6)** Detección de batch effect y **7)** Obtener los resultados de los contraste de DEG. 
-
----
-
-### Paso 1. Importar los archivos de cuentas a R
-
-Emplearemos el script [`import_txi_inR.R`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia3/scripts/import_txi_inR.R) para correr el siguiente análisis. 
-
-Asi se ven las salidas despues de correr **STAR y Salmon**:
-
-```
-├── QR108_4
-│   ├── aux_info
-│   │   ├── ambig_info.tsv
-│   │   ├── expected_bias.gz
-│   │   ├── fld.gz
-│   │   ├── meta_info.json
-│   │   ├── observed_bias_3p.gz
-│   │   └── observed_bias.gz
-│   ├── cmd_info.json
-│   ├── libParams
-│   │   └── flenDist.txt
-│   ├── logs
-│   │   └── salmon_quant.log
-│   ├── quant.genes.sf
-│   └── quant.sf
-├── QR108_4.sorted.bam
-├── QR108_4.sorted.bam.bai
+```{bash, eval=F}
+# Dirección en mi computadora
+cd /Users/ecoss/Documents/RNAseq_classFEB2026/Practica_Dia2/counts/kallisto_quant
+# 
+rsync -avz ecoss@ken.lavis.unam.mx:/mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/kallisto/kallisto_quant/ .
 ```
 
 ---
 
-### Paso 1. Importar los archivos de cuentas a R
+### Paso 1. Archivos de salida de Kallisto
+
+Asi se ven las salidas despues de correr **kallisto**:
+
+```
+├── align/kallisto/kallisto_quant/SRR27190676
+│   ├── abundance.h5    
+│   ├── abundance.tsv
+│   ├── run_info.json
+```
+
+Podemos importar los `.h5` o el `.tsv`.
+
+---
+
+### Paso 2. Importar archivo `.h5` (opción A)
+
+```{r}
+library(tximport)
+# Definir la carpeta donde están los resultados
+ruta <- "/Users/ecoss/Documents/RNAseq_classFEB2026/Practica_Dia2/counts/kallisto_quant"
+# Listar todos los archivos .h5 dentro de las subcarpetas
+archivos_h5 <- list.files(path = ruta,
+                          pattern = "\\.h5$",
+                          full.names = TRUE,
+                          recursive = TRUE)
+# Extraer el nombre SRR de la ruta (basename de la carpeta)
+nombres_srr <- basename(dirname(archivos_h5))
+# colocarle nombres
+names(archivos_h5) <- nombres_srr
+# importar archivo
+txi.kallisto <- tximport(archivos_h5, type = "kallisto", txOut = TRUE)
+head(txi.kallisto$counts)
+```
+
+---
+
+### Archivos de salida de `Salmon`
 
 Cargar todos los archivos de cuentas obtenidos de Salmon
 
@@ -469,7 +389,7 @@ length(files)
 
 ### Tabla de conversión para `tximport`
 
-Cargar la tabla de conversión ([`salmon_tx2gene.tsv`](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia3/metadata/)):
+Cargar la tabla de conversión ([`salmon_tx2gene.tsv`](https://github.com/EveliaCoss/RNAseq_classFEB2026/blob/main/Practica_Dia3/metadata/)):
 
 - **Columna 1:** Identificadores de transcritos
 - **Columna 2:** Identificadores de los genes
@@ -487,7 +407,7 @@ head(tx2gene, 2)
 
 ---
 
-### Paso 2. Creamos una matriz de cuentas
+### Paso 2. Importar archivo `.tsv` (opción B)
 
 Cuando se usa en R con `tximport`, este archivo permite agrupar las cuantificaciones de transcritos en niveles de genes:
 
@@ -500,6 +420,41 @@ names(txi)
 
 - Asegúrate de que los identificadores en `tx2gene` coincidan con los usados en los archivos de cuantificación (salmon, kallisto, etc.) (checa el archivo de anotación).
 - `tx2gene` se usa para resumir la expresión a nivel de genes, en lugar de quedarse con la expresión de transcritos individuales.
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("terminal", height = "3em")`
+# 4. Importar cuentas de `STAR` a R
+
+---
+
+## Archivos de salida provenientes de **STAR**
+
+.pull-left[
+Utilizaremos los archivos `SRRxxx_ReadsPerGene.out.tab`
+
+```{bash, eval = F}
+cd /mnt/data/bioinfo-estadistica-2/RNAseq_2026/BioProject_2026/align/STAR/STAR_output/
+less SRR12363102_ReadsPerGene.out.tab
+```
+
+Para salir escribe `q`.
+
+#### Información contenida
+
+- **column 1:** gene ID
+- **column 2:** Conteos para RNA-seq sin orientación (unstranded). 
+- **column 3:** Conteos para la primera hebra alineada con el RNA (`htseq-count opción -s yes`)
+- **column 4:** Conteos para la segunda hebra alineada con el RNA (`htseq-count opción -s reverse`)
+
+]
+
+
+.pull-right[
+<img src="figures/out_counts.png", height = "400">
+]
 
 ---
 
@@ -523,7 +478,7 @@ dim(my_biotypes) # [1] 21949     2
 
 ---
 
-### Paso 3. Eliminar transcritos ribosomales
+### Paso 4. Eliminar transcritos ribosomales
 
 Ensembl tiene una gran [variedad de biotipos](https://www.ensembl.org/info/genome/genebuild/biotypes.html) anotados en sus genes, pero nosotros decidimos eliminar los ribosomales (rRNA), ribozimas (ribozyme) y  vault (vault_RNA).
 
@@ -537,7 +492,7 @@ Al final nos quedamos con 21,816 genes en los 165 transcriptomas.
 
 ---
 
-### Paso 4. Cargamos los metadatos
+### Paso 5. Cargamos los metadatos
 
 **¿Qué son los metadatos?**
 
@@ -545,30 +500,23 @@ Los metadatos nos van a dar la información acerca de las columnas / muestras de
 
 Estos datos son útiles para análisis posteriores, en los que queremos relacionar expresión diferencial con una condición o condiciones.
 
-Encuentra los metadatos [aquí](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/metadata/metadata.csv).
-
-```{r, eval = F}
-# Cargar archivos
-load(file = '../Practica_Dia3/counts/txi_filtered.RData') # filtered_txi
-# Cargar metadata
-metadata <- read.csv("../Practica_Dia3/metadata/metadata.csv", header = F)
-```
-
 ---
 
-### Paso 4. Cargamos los metadatos
+### Obtener información de la metadata de los datasets
 
-Exploremos los datos
+En ENA/EBI, puedes obtener la información relacionada con el estudio si le das click en "Show Columns Selection" y seleccionas `sample_title`. Puedes explorar [este ejemplo](https://www.ebi.ac.uk/ena/browser/view/PRJNA1051620).
 
-```{r, eval=FALSE}
-head(filtered_txi$counts, 3)[,1:4]
+**Muestras NR (sin reacción):** 
 
-# QR011_0 QR011_1 QR011_2 QR011_3
-# A1BG     179.000 134.000 293.936 401.000
-# A1BG-AS1  69.977  76.949 144.290 205.607
-# A1CF       0.000   0.000   0.000   0.000
-```
-Vamos a ir viendo como estos valores cambian con la normalización. 
+- SRR27190676 (SAMN38792978) - [p18.S028.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38792978)
+- SRR27190684 (SAMN38792983)- [p17.S023.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38792983)
+- SRR27190700 (SAMN38792993) - [p12.S013.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38792993)
+
+**Muestras R (con reacción):** 
+
+- SRR27190685 (SAMN38792988) - [p14.S018.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38792988)
+- SRR27190708 (SAMN38793001) - [p1.S003.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38793001)
+- SRR27190710 (SAMN38792997)- [p8.S008.day7](https://www.ncbi.nlm.nih.gov/biosample/SAMN38792997)
 
 ---
 
@@ -679,6 +627,10 @@ knitr::include_graphics("figures/SLE_heatmap_zscore.png")
 ```
 ]
 
+.left[.footnote[.black[
+[Gene expression profiling of dendritic cell tolerance dysfunction in women with Systemic lupus erythematosus, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
+]]]
+
 ---
 
 ## **DESeq2** emplea `size factor` (median of ratios) para normalizar las raw counts
@@ -783,7 +735,6 @@ library(ggplot2)
 Codigo proveniente de [Stackoverflow](https://stackoverflow.com/questions/73554215/how-to-add-density-plot-per-component-in-pca-plot-in-r).
 ]
 
-
 .pull-right[
 ```{r, echo=FALSE, out.width='100%', fig.align='center'}
 knitr::include_graphics("figures/pca_example2.png")
@@ -791,228 +742,11 @@ knitr::include_graphics("figures/pca_example2.png")
 ]
 
 ---
-class: inverse, center, middle
-
-`r fontawesome::fa("laptop-code", height = "3em")`
-# 5. DEG con DESeq2
-
----
-
-## El analisis de expresion diferencial se realiza en pares
-
-.pull-left[
-Siempre vamos a comparar al **CONTROL (no tratado)** VS una **Condición (pacientes con SLE)**. Las comparaciones se realizan en pares.
-
-El diseño que debemos darle a DESeq2 seria:
-
-```{r, eval=FALSE}
-dds <- DESeqDataSetFromTximport(txi = txi,
-                                colData = metadata,
-                                design = ~Group)
-```
-
-Designando que la referencia (ref) es el control.
-
-```{r, eval=FALSE}
-dds$type <- relevel(dds$type, ref = "CONTROL") 
-```
-
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/diseno_experimental.png")
-```
-]
-
----
-
-## Manejo de Contrastes (Contrasts)
-
-```{r, eval=F}
-levels(dds$type)
-## [1] "CONTROL"     "SLE"
-```
-
-Podemos renombrar contrastes
-
-```{r, eval=FALSE}
-levels(dds$type) <- c("control", "sle")
-```
-
----
-
-## Manejo de información
-
-Podemos seleccionar por tipos celulares
-
-```{r, eval=FALSE}
-mo_df <- metadata[metadata$Cell_type == 'monocyte',]
-mo_df$Group <-as.factor(mo_df$Group)
-dim(mo_df) #33 6
-```
-
-Despues aplicamos esta información en el dds
-
-```{r, eval=FALSE}
-dds_mo <- dds[,mo_df$sample_ID]
-dds_mo$Group <- relevel(dds_mo$Group, ref = 'Ctrl')
-unique(dds_mo$Group)
-# cambiamos el diseno
-design(dds_mo) <- ~Group
-save(dds_mo, file = paste0(ddsDir, 'dds_mo.RData'))
-```
-
----
-
-## Analisis de expresión diferencial
-
-```{r, eval=F}
-dds_mo <- DESeq(dds_mo)
-
-# estimating size factors
-# estimating dispersions
-# gene-wise dispersion estimates
-# mean-dispersion relationship
-# final dispersion estimates
-# fitting model and testing
-```
-
----
-
-## Obtener información de los contrastes
-
-```{r, eval=F}
-# Opcion A
-resultsNames(dds_mo) # lists the coefficients
-# [1] "Intercept"            "Group_SLE_vs_Ctrl"
-
-# Opcion B
-# results(dds, contrast = c("condition", "treated", "untreated"))
-res_mo <- results(dds_mo, contrast=c("Group", "SLE", "Ctrl"))
-res_mo_Ordered <- res_mo[order(res_mo$padj),]
-summary(res_mo_Ordered)
-
-# LFC > 0 (up)       : 121, 0.55%
-# LFC < 0 (down)     : 23, 0.11%
-# outliers [1]       : 0, 0%
-#low counts [2]     : 7903, 36%
-```
-
----
-
-## Podemos unir información de las variables para crear una nueva categoria
-
-En el siguiente ejemplo utilizamos datos de LUPUS, en donde tenemos 3 variables de interes: 
-
-- `Group`: son las condiciones (control, paciente).
-
-- `Cell_type`: Tipos celulares
-
-- `Dose_category`: Dosis de corticoides solo en los pacientes.
-
-- `SLEDAI_category`: Actividad de la enfermedad
-
-```{r, eval=F}
-dds <- DESeqDataSetFromTximport(txi = txi,
-                                colData = metadata,
-                                design = ~ Group + Dose_category + SLEDAI_category)
-dds
-```
-
-Podemos crear una categoria que combine la informacion en las variables:
-
-```{r, eval=F}
-dds$Internal <- factor(paste(dds$SLEDAI_category, dds$Group, sep="_"))
-```
-
----
-
-## Podemos unir la información 3 variables por cada grupo
-
-Extraer la informacion de controles y luego unir las variables de esta manera
-
-```{r, eval=F}
-dds$Internal <- factor(paste(dds$Dose_category, dds$Dose_category, dds$SLEDAI_category, sep="_"))
-
-dds <- DESeqDataSetFromTximport(txi = filtered_txi,
-                                colData = metadata,
-                                design = ~ Internal)
-dds
-```
-
-
-El script completo se encuentra en [DEG_analysis.R](https://github.com/EveliaCoss/RNAseq_classFEB2025/blob/main/Practica_Dia3/scripts/DEG_analysis.R).
-
----
-
-### Pipeline
-
->  Especie: *Mus musculus*, Alineamiento: STAR, Conteo: STAR
-
-- Script [`load_data_inR.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/load_data_inR.R):
-
-  **1)** Importar datos en R (archivo de cuentas) + metadatos y **2)** Crear una matriz de cuentas con todos los transcriptomas. 
-
-- Script [`DEG_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/DEG_analysis.R):
-
-  **3)** Crear el archivo `dds` con `DESeq2`, **4)** Correr el análisis de Expresión Diferencial de los Genes (DEG), **5)** Normalización de los datos, **6)** Detección de batch effect y **7)** Obtener los resultados de los contraste de DEG. Input: [raw_counts.csv](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/raw_counts.csv) y  [metadata.csv](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia2/data/metadata.csv)
-
-- Script [`VisualizacionDatos.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/VisualizacionDatos.R):
-
-  **8)** Visualización de los datos
-
-- Script [`GOterms_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia4/scripts/GOterms_analysis.R):
-
-  **9)** Análisis de términos funcionales (GO terms)
-
----
-class: inverse, center, middle
-
-`r fontawesome::fa("laptop-code", height = "3em")`
-# Buenas prácticas de programación
-## Documentación de codigo
-
----
- 
-## Buenas prácticas de programación: Set up de tu trabajo 📌
-
-Es buena idea comenzar **todos** tus scripts con las mismas líneas de código que indiquen lo siguiente:
-
-.content-box-gray[
-- *Título de tu programa*
-- *Autor (author)*: Su nombre
-- *Fecha (date)*: Fecha de creación
-- *Propósito general de tu programa (Description)*: ¿Para qué sirve el programa? Ej: El siguiente programa realiza la suma de dos numeros enteros a partir de la entrada del usuario y posteriormente la imprime en pantalla.
-- *Usage* ¿Cómo se utiliza?
-- *Paquetes (packages)*
-- *Directorio de trabajo (Working directory)*: En que carpeta se encuentra tu datos y programa.
-  - *Directorio de input*: aquí estan guardados los datos que vas a usar en el programa
-  - *Directorio de output*: aquí es donde vas a guardar tus resultados
-- *Argumentos (Arguments)*
-  - *Información de entrada (Data Inputs)*: Ej: Solo numeros enteros (sin decimales).
-  - *Información de salida (Outpus)*: Graficas, figuras, tablas, etc.
-- Líneas en donde cargues los datos que vas a usar
-]
-
-Ejemplo de Bonita documentación de codigo da click [aqui](https://github.com/mdozmorov/dcaf/tree/master/ngs.rna-seq)
-
----
-
-## Actividad grupal
-
-### Generar llaves de seguridad
-
-¿Tienen acceso rápido y seguro al clúster? ✅🔑
-
-Si la respuesta es no, pueden seguir este [tutorial](https://github.com/EveliaCoss/keygen) para generar sus llaves de acceso de manera sencilla y segura. 🚀
-
----
 
 class: center, middle
 
 `r fontawesome::fa("code", height = "3em")`
-# Jueves 6 de marzo 2024  
-## GSEA - Análisis funcional
+# Jueves 23 de abril 2026  
+## 
 
 Gracias por tu atención, respira y coméntame tus dudas. 
