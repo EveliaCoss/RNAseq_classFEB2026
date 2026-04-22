@@ -116,10 +116,13 @@ pre {
   border-radius:      1px;                      /* modify rounding of corners*/
 }
 
-/*--  --*/
+/*-- Chunck espacio y tamaño o distribución --*/
 pre code {
-  background:         none;
+  background:         none; /* fondo transparente */
   font-size:          18px !important;
+  max-width: 100%;         /* Se adapta al ancho del contenedor */
+  white-space: pre-wrap;   /* Permite que el texto se ajuste */
+  box-sizing: border-box;  /* Asegura que padding/border no rompan el ajuste, Elimina scrolling */ 
 }
 
 /*-- BARRA HORIZONTAL --*/
@@ -150,7 +153,16 @@ hr {
   padding-right:      4em;
   font-size:          70%;
   line-height:        1em;
-  color:              var(--White);
+  color: #333333;      /* gris oscuro en lugar de blanco (var(--White);) */ 
+}
+
+.footnote-right {
+  position: absolute;
+  bottom: 2em;
+  right: 2em;          /* anclado al borde derecho */
+  font-size: 70%;
+  line-height: 1em;
+  color: #333333;      /* gris oscuro en lugar de blanco (var(--White);) */ 
 }
 
 
@@ -297,3 +309,88 @@ slides > slide {
   overflow-y: scroll;
 }
 
+/*-- Colocar logo en la parte equina inferior izquierda, con degrdado de fondo blnaco --*/
+/* Fondo normal (solo para slides que NO son inverse) 
+.remark-slide-content:not(.inverse) {
+  background-image: url("figures/liigh_unam_logo.png"),
+                    linear-gradient(to top, white 88%, rgba(227, 227, 227) 96%);
+  background-position: right 70px top 20px, center;
+  background-size: 100px, 100% 100%;
+  font-size: 24pt;
+}
+*/
+
+/* Fondo para inverse: limpio y oscuro */
+.inverse .remark-slide-content {
+  background: #272822 !important; /* color base del tema inverse */
+  background-image: none !important;
+  color: white; /* asegura contraste del texto */
+}
+
+
+/*-- Titulo de la diapositiva --*/
+
+.title-slide h1 {
+  color: white;       /* Cambia el color aquí (ejemplo: rojo) */
+  font-weight: bold;
+}
+
+.title-slide h2 {
+  color: #41b6c4;       /* Cambia el color aquí (ejemplo: rojo) */
+  font-weight: bold;
+}
+
+.title-slide h3 {
+  color: #525252;       /* Cambia el color aquí (ejemplo: rojo) */
+  font-weight: bold;
+}
+
+.author {
+  color: #d7301f;
+  font-weight: bold;
+}
+.date {
+  color: #d7301f;
+  font-weight: bold;
+}
+
+/* activar scrolling en la salida */
+
+.scrollable {
+  max-height: 400px;   /* altura máxima */
+  overflow-y: auto;    /* scroll vertical */
+  overflow-x: auto;    /* scroll horizontal */
+  font-size: 12px;     /* opcional */
+  border: 1px solid #ccc; /* opcional */
+  padding: 5px;        /* opcional */
+  background-color: #f9f9f9; /* opcional */
+}
+
+/* Color de la salida de los codigos */
+.remark-code-output {
+  color: #8c6bb1;   /* azul, cámbialo al color que quieras */
+  font-weight: normal;
+}
+
+/* Cambiar color de los comentarios en bloques de código */
+.remark-code .hljs-comment {
+  color: #810f7c;   /* rojo oscuro, cámbialo al color que quieras */
+  font-style: italic; /* opcional: cursiva para distinguirlos */
+}
+
+
+/* CSS tomado de https://gist.github.com/gadenbuie/3869b688f5e50882e67b684a1e092937 */
+/* Código a la izquierda */
+.left-code {
+  color: #777;
+  width: 38%;
+  height: 92%;
+  float: left;
+}
+
+/* La salida a la derecha */
+.right-plot {
+  width: 60%;
+  float: right;
+  padding-left: 1%;
+}

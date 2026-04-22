@@ -1,8 +1,8 @@
 ---
 title: "Workshop: Análisis de datos de RNA-Seq"
-subtitle: "⚔<br/>GSEA - Análisis funcional"  
-author: "Dra. Evelia Coss, Sofia Salazar y Diego Ramirez"
-date: "06/03/2025"
+subtitle: "⚔<br/>Normalización de datos, Corrección de batch effect"  
+author: "Dra. Evelia Coss"
+date: "23/04/2026"
 output:
   xaringan::moon_reader:
     css: 
@@ -114,7 +114,7 @@ style_duo_accent(
 ```
 
 class: title-slide, middle, center
-background-image: url(figures/Clases_RNASeq_Slide1.png) 
+background-image: url(figures/HelloWorld_slide1.png) 
 background-position: 90% 75%, 75% 75%, center
 background-size: 1210px,210px, cover
 
@@ -126,18 +126,42 @@ background-size: 1210px,210px, cover
 #### `r rmarkdown::metadata$date`
 ]
 
-.left[.footnote[R-Ladies Theme[R-Ladies Theme](https://www.apreshill.com/project/rladies-xaringan/)]]
+.footnote[ [R-Ladies Theme](https://www.apreshill.com/project/rladies-xaringan/)
+]
 
 ---
 
 class: inverse, center, middle
 
-`r fontawesome::fa("laptop-code", height = "3em")`
-# 3. Normalización de datos
+`r fontawesome::fa("chart-area", height = "3em")`
+# 1. Normalización de los datos
 
 ---
 
-## Normalización de datos
+.pull-left[
+
+## ¿Qué significa normalizar?
+
+Normalizar es ajustar los datos para que puedan compararse entre células.
+- Imagina que cada célula es como un estudiante que entrega una lista de palabras escritas.
+- Algunos escriben mucho, otros poco.
+- Para poder comparar, necesitamos ponerlos en la misma “escala”.
+]
+
+.pull-right[  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics("figures/normalization_methods_composition.png")
+```
+]
+
+
+.footnote[Imagen tomada de:
+[Introduction to DGE - ARCHIVED](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
+]
+
+---
+
+## Normalización de los datos
 ### ¿Por qué es necesario normalizar?
 
 Nuestros datos están sujetos a **sesgos técnicos** y **biológicos** que provocan **variabilidad** en las cuentas.
@@ -169,21 +193,19 @@ knitr::include_graphics("figures/normalization.png")
 ]
 
 
-.left[.footnote[.black[
-Revisa el [manual de DESEq](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts)
-]]]
+.footnote[Imagenes provenientes de:
+Revisa el [manual de DESEq](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts); [Introduction to DGE - ARCHIVED](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
+]
 
 ---
 
-## Métodos de normalización
+## Counts per million (CPM) o Reads per million (RPM) 
 
 .pull-left[
 
-#### **Counts per million (CPM)** o **Reads per million (RPM) **  
+`CPM o RPM = (C * N) / 1e6`
 
-`CPM o RPM = C * 10^6/N`
-
-- C: Numero de reads mapeados en el gen
+- C: Numero de reads mapeados (conteos) en el gen
 - N: Numero total de reads mapeados
 
 Ejemplo: Si tenemos 5 millones de reads o lecturas (M). Y la mayoría  de ellos alinean con el genoma (4 M). Encontramos un gen con 5000 reads. 
@@ -196,17 +218,99 @@ Ejemplo: Si tenemos 5 millones de reads o lecturas (M). Y la mayoría  de ellos 
 
 .pull-right[
 
-> **NOTA:** El CPM no contempla el tamaño del gen en la normalización.   
+> **NOTA:** El CPM no contempla el tamaño del gen en la normalización.  
+>
+> **NOTA:** 1e6 es lo mismo que 10^6.
 
-> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de DESEq2 (rlog o vst) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
-> 
-> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
+Ejemplo:
+
+```{r}
+conteos <- c(100, 500, 1000)   # tres genes
+total <- sum(conteos)          # total de lecturas
+cpm <- (conteos / total) * 1e6 # equivalente a * 10^6
+cpm
+```
+
 ]
 
 
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://www.reneshbedre.com/blog/expression_units.html).
-]]]
+.footnote[
+Para más ejemplos puedes verlos dando click [aquí](https://bio-protocol.org/exchange/protocoldetail?id=4462&type=1).
+]
+
+---
+
+.pull-left[
+## TPM (Transcripts Per Million)
+
+- Considera: **Profundidad + longitud del gen, con proporcionalidad**
+- Ventajas: Comparaciones más consistentes entre muestras
+- Limitaciones: Requiere anotaciones precisas de longitud
+- Fórmula: Se calcula a partir de los **RPK (Reads Per Kilobase)**:
+
+  1. Se obtienen los RPK de todos los genes.
+  2. Se suman todos los RPK.
+  3. Cada RPK se divide por la suma y se multiplica por 10^6
+
+Así, **TPM** es una versión escalada de RPK que permite comparar entre muestras.
+
+]
+
+.pull-right[
+
+Ejemplo: 
+
+```{r}
+# 1. Calcular RPK (Reads Per Kilobase)
+counts <- c(GeneA=1000, GeneB=500, GeneC=200)
+lengths <- c(GeneA=2000, GeneB=500, GeneC=1000) # en bases
+
+rpk <- counts / (lengths/1000)
+rpk
+# GeneA = 500, GeneB = 1000, GeneC = 200
+
+# 2. Sumar todos los RPK
+sum_rpk <- sum(rpk)  # 1700
+
+# 3. Calcular TPM
+tpm <- (rpk / sum_rpk) * 1e6
+tpm
+```
+
+]
+---
+
+.pull-left[
+## RPKM / FPKM (no recomendado)
+
+- Considera: **Profundidad + longitud del gen**
+- Ventajas: Historicamente usado
+- Limitaciones: Menos robusto para comparar entre muestras
+- Fórmula: (conteo / (longitud kb × total lecturas)) × 1e6
+
+- Si bien los métodos de normalización **TPM** y **RPKM/FPKM** tienen en cuenta la profundidad de secuenciación y la longitud del gen, no se recomienda el uso de RPKM/FPKM. Esto se debe a que los valores de recuento normalizados que genera este método no son comparables entre muestras.
+
+]
+
+.pull-right[
+
+Ejemplo:
+
+```{r}
+# Conteos y longitudes
+counts <- c(GeneA=1000, GeneB=500, GeneC=200)
+lengths <- c(GeneA=2000, GeneB=500, GeneC=1000) # bases
+total_counts <- sum(counts)
+
+# RPKM
+rpkm <- (counts * 1e9) / (lengths * total_counts)
+
+# Para FPKM, si fueran paired-end, counts serían fragmentos en vez de lecturas
+fpkm <- rpkm  # misma fórmula, distinto insumo
+rpkm  # Reads Per Kilobase of transcript per Million mapped reads
+fpkm  # Fragments Per Kilobase of transcript per Million mapped fragments
+```
+]
 
 ---
 
@@ -232,14 +336,20 @@ zscore_mat <- as.matrix(zscores)
 ]
 
 .pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
 knitr::include_graphics("figures/SLE_heatmap_zscore.png")
 ```
 ]
 
-.left[.footnote[.black[
-[Gene expression profiling of dendritic cell tolerance dysfunction in women with Systemic lupus erythematosus, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
-]]]
+.footnote[Imagen tomada de:
+[Hernandez-Ledesma, Coss-Navarrete, et-al, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
+]
+
+---
+
+> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de DESEq2 (rlog o vst) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
+> 
+> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
 
 ---
 
@@ -263,9 +373,9 @@ knitr::include_graphics("figures/sizefactor.png")
 ```
 ]
 
-.left[.footnote[.black[
+.footnote[
 Para más ejemplos puedes verlos dando click [aquí](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html).
-]]]
+]
 
 ---
 
@@ -284,9 +394,9 @@ Buen diseño experimental con un minimo de 3 Réplicas biológicas, pero aún pu
 knitr::include_graphics("figures/batch_effect_pca2.png")
 ```
 
-.left[.footnote[.black[
+.footnote[
 Imagen proveniente de [Hicks, et al. 2015. bioRxiv](https://www.biorxiv.org/content/early/2015/08/25/025528)
-]]]
+]
 
 ---
 
@@ -300,9 +410,9 @@ Algunos ejemplos:
 
 - Paquete [batchman](https://cran.r-project.org/web/packages/batchtma/vignettes/batchtma.html)
 
-.left[.footnote[.black[
+.footnote[
 Para más ejemplos puedes verlos dando click [aquí](https://evayiwenwang.github.io/Managing_batch_effects/adjust.html#correcting-for-batch-effects).
-]]]
+]
 
 ---
 
@@ -355,5 +465,4 @@ knitr::include_graphics("figures/pca_example2.png")
 class: center, middle
 
 `r fontawesome::fa("code", height = "3em")`
-# Felicidades por terminar el curso
-## Recuerda mandar tu trabajo final en equipo el **28 de marzo**
+# 
