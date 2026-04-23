@@ -9,7 +9,7 @@
 <meta name="author" content="Dra. Evelia Coss">
 <meta name="dcterms.date" content="2026-04-23">
 
-<title>Importar datos</title>
+<title>Preprosamiento de los datos</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -86,15 +86,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="fullcontent quarto-light">
+<body class="quarto-light">
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contenido</h2>
+   
+  <ul>
+  <li><a href="#cargar-paquetes" id="toc-cargar-paquetes" class="nav-link active" data-scroll-target="#cargar-paquetes">Cargar paquetes</a></li>
+  <li><a href="#paso-1.-crear-el-archivo-tx2gene-a-partir-del-gtf" id="toc-paso-1.-crear-el-archivo-tx2gene-a-partir-del-gtf" class="nav-link" data-scroll-target="#paso-1.-crear-el-archivo-tx2gene-a-partir-del-gtf">Paso 1. Crear el archivo <code>tx2gene</code> a partir del GTF</a></li>
+  <li><a href="#paso-2.-importar-datos-de-salida-de-kallisto-a-r" id="toc-paso-2.-importar-datos-de-salida-de-kallisto-a-r" class="nav-link" data-scroll-target="#paso-2.-importar-datos-de-salida-de-kallisto-a-r">Paso 2. Importar datos de salida de <code>kallisto</code> a R</a>
+  <ul class="collapse">
+  <li><a href="#opción-a.-importar-archivo-.h5-de-kallisto-se-cargan-a-nivel-de-transcritos" id="toc-opción-a.-importar-archivo-.h5-de-kallisto-se-cargan-a-nivel-de-transcritos" class="nav-link" data-scroll-target="#opción-a.-importar-archivo-.h5-de-kallisto-se-cargan-a-nivel-de-transcritos">Opción A. Importar archivo <code>.h5</code> de <code>kallisto</code> (se cargan a nivel de transcritos)</a></li>
+  <li><a href="#opción-b.-importar-archivo-.tsv-de-kallisto-se-cargan-a-nivel-de-genes-manera-correcta" id="toc-opción-b.-importar-archivo-.tsv-de-kallisto-se-cargan-a-nivel-de-genes-manera-correcta" class="nav-link" data-scroll-target="#opción-b.-importar-archivo-.tsv-de-kallisto-se-cargan-a-nivel-de-genes-manera-correcta">Opción B. Importar archivo <code>.tsv</code> de <code>kallisto</code> (se cargan a nivel de genes) ⭐ Manera correcta</a></li>
+  </ul></li>
+  <li><a href="#paso-3.-filtrar-biotipos" id="toc-paso-3.-filtrar-biotipos" class="nav-link" data-scroll-target="#paso-3.-filtrar-biotipos">Paso 3. Filtrar biotipos</a></li>
+  <li><a href="#paso-4.-crearcargar-la-metadata" id="toc-paso-4.-crearcargar-la-metadata" class="nav-link" data-scroll-target="#paso-4.-crearcargar-la-metadata">Paso 4. Crear/Cargar la metadata</a></li>
+  <li><a href="#paso-5.-crear-el-objeto-deseq2" id="toc-paso-5.-crear-el-objeto-deseq2" class="nav-link" data-scroll-target="#paso-5.-crear-el-objeto-deseq2">Paso 5. Crear el objeto DESEq2</a></li>
+  <li><a href="#paso-6.-normalización-de-las-cuentas-con-vst" id="toc-paso-6.-normalización-de-las-cuentas-con-vst" class="nav-link" data-scroll-target="#paso-6.-normalización-de-las-cuentas-con-vst">Paso 6. Normalización de las cuentas con VST</a></li>
+  <li><a href="#paso-7.-melting-the-normalized-count-matrix-for-visualization" id="toc-paso-7.-melting-the-normalized-count-matrix-for-visualization" class="nav-link" data-scroll-target="#paso-7.-melting-the-normalized-count-matrix-for-visualization">Paso 7. Melting the Normalized Count Matrix for Visualization</a></li>
+  <li><a href="#paso-8.-compute-z-score-transformation" id="toc-paso-8.-compute-z-score-transformation" class="nav-link" data-scroll-target="#paso-8.-compute-z-score-transformation">Paso 8. Compute z-score transformation</a></li>
+  <li><a href="#paso-9.-visualización-de-pca" id="toc-paso-9.-visualización-de-pca" class="nav-link" data-scroll-target="#paso-9.-visualización-de-pca">Paso 9. Visualización de PCA</a>
+  <ul class="collapse">
+  <li><a href="#color-by-responder" id="toc-color-by-responder" class="nav-link" data-scroll-target="#color-by-responder">Color by <code>responder</code></a></li>
+  </ul></li>
+  <li><a href="#paso-10.-corrección-de-batch-effect" id="toc-paso-10.-corrección-de-batch-effect" class="nav-link" data-scroll-target="#paso-10.-corrección-de-batch-effect">Paso 10. Corrección de batch effect</a></li>
+  <li><a href="#paso-11.-conclusiones-y-estrategias-a-realizar" id="toc-paso-11.-conclusiones-y-estrategias-a-realizar" class="nav-link" data-scroll-target="#paso-11.-conclusiones-y-estrategias-a-realizar">Paso 11. Conclusiones y estrategias a realizar</a>
+  <ul class="collapse">
+  <li><a href="#qué-estrategias-podemos-realizar" id="toc-qué-estrategias-podemos-realizar" class="nav-link" data-scroll-target="#qué-estrategias-podemos-realizar">¿Qué estrategias podemos realizar?</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="https://github.com/EveliaCoss/RNAseq_classFEB2026"><i class="bi bi-link-45deg"></i>GitHub</a></li></ul></div><div class="quarto-code-links"><h2>Code Links</h2><ul><li><a href="https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.qmd"><i class="bi bi-file-code"></i>Código de Quarto</a></li></ul></div></nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Importar datos</h1>
+<h1 class="title">Preprosamiento de los datos</h1>
 </div>
 
 
@@ -447,8 +478,8 @@ ENSG00000000938 24425.16548</code></pre>
 <span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata) <span class="sc">%&gt;%</span> </span>
 <span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>  DT<span class="sc">::</span><span class="fu">datatable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
-<div class="datatables html-widget html-fill-item" id="htmlwidget-3814b89a673b92dbfdf1" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-3814b89a673b92dbfdf1">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["SRR27190676","SRR27190684","SRR27190700","SRR27190685","SRR27190708","SRR27190710"],["p18.S028.day7","p17.S023.day7","p12.S013.day7","p14.S018.day7","p1.S003.day7","p8.S008.day7"],["NR","NR","NR","R","R","R"],["SLE","SLE","SLE","SLE","SLE","SLE"],["d7","d7","d7","d7","d7","d7"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sample_ID<\/th>\n      <th>sample_title<\/th>\n      <th>responder<\/th>\n      <th>condition<\/th>\n      <th>day<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"sample_ID","targets":1},{"name":"sample_title","targets":2},{"name":"responder","targets":3},{"name":"condition","targets":4},{"name":"day","targets":5}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-8971905a9c20a39dc949" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8971905a9c20a39dc949">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["SRR27190676","SRR27190684","SRR27190700","SRR27190685","SRR27190708","SRR27190710"],["p18.S028.day7","p17.S023.day7","p12.S013.day7","p14.S018.day7","p1.S003.day7","p8.S008.day7"],["NR","NR","NR","R","R","R"],["SLE","SLE","SLE","SLE","SLE","SLE"],["d7","d7","d7","d7","d7","d7"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sample_ID<\/th>\n      <th>sample_title<\/th>\n      <th>responder<\/th>\n      <th>condition<\/th>\n      <th>day<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"sample_ID","targets":1},{"name":"sample_title","targets":2},{"name":"responder","targets":3},{"name":"condition","targets":4},{"name":"day","targets":5}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>

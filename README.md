@@ -101,6 +101,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
   + [Corrección por *batch effect*](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_normalizacion_batcheffect.html#1)
 - Ejercicio en clase para Descarga: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.qmd)
 - Ejercicio en clase, visualizar reporte: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.html)
+- Código empleado: [Step1_ImportData.qmd](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic/blob/main/Step1_ImportData.qmd); [Step2_PCA.qmd](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic/blob/main/Step2_PCA.qmd)
 
 ### Dia 5. DEG con kallisto y DESeq2
 

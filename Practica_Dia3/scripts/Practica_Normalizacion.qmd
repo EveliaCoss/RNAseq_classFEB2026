@@ -1,8 +1,20 @@
 ---
-title: "Importar datos"
+title: "Preprosamiento de los datos"
 author: "Dra. Evelia Coss"
 date: 04/23/2026
-format: html
+format:
+  html:
+    toc: true # Agregar listado del contenido
+    toc-depth: 3
+    toc-title: Contenido # título
+    toc-location: left # posición
+    other-links:
+      - text: GitHub
+        href: https://github.com/EveliaCoss/RNAseq_classFEB2026
+    code-links:
+      - text: Código de Quarto
+        icon: file-code
+        href: https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.qmd   
 editor: visual
 ---
 
