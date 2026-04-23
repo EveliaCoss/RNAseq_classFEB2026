@@ -678,8 +678,8 @@ class: inverse, center, middle
 
 # Ejercicio de repaso
 
-- Descarga el archivo: [Practica3.qmd](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.qmd)
-- Visualización del reporte final: [Practica3](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.html)
+- Descarga el archivo: [Practica3.qmd](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.qmd)
+- Visualización del reporte final: [Practica3](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.html)
 
 ---
 

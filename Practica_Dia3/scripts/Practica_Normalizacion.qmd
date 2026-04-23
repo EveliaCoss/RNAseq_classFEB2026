@@ -258,9 +258,7 @@ Guardar objeto
 save(dds, file = paste0(workdir, "/counts/kallisto_outputs/dds_cleaned.RData"))
 ```
 
-## Paso 6. Normalización de las cuentas con VST
-
-Variance Stabilizing Transformation (VST) for Normalization
+## Paso 6. Normalización de las cuentas con rlog (log regularizado)
 
 ```{r}
 counts <- assays(dds)$counts
@@ -270,20 +268,20 @@ head(counts(dds))[1:4, 1:4]
 We first extract the raw count matrix from the `DESeqDataSet` object using `assays(dds)$counts`.
 
 ```{r}
-vsd <- vst(counts, blind=FALSE)
-head(vsd)[1:4, 1:4]
+rlog_result <- rlog(counts, blind=FALSE)
+head(rlog_result)[1:4, 1:4]
 ```
 
-Almacenar counts y cuentas transformadas con VST:
+Almacenar counts y cuentas transformadas con `rlog`:
 
 ```{r}
 # Save vsd
-save(vsd, file = paste0(workdir, "/counts/kallisto_outputs/vsd.RData"))
+save(rlog_result, file = paste0(workdir, "/counts/kallisto_outputs/rlog.RData"))
 # Save counts
 save(counts, file = paste0(workdir, "/counts/kallisto_outputs/rawCounts.RData"))
 ```
 
-The `vst()` function is then applied to perform a variance stabilizing transformation. Setting `blind = FALSE` means that the transformation will take into account the experimental design, which is recommended for visualization and downstream comparisons.
+The `rlog()` function is then applied to perform a regularized log transformation. Setting `blind = FALSE` means that the transformation will take into account the experimental design, which is recommended when the goal is visualization and downstream comparisons. Unlike a simple log, the regularization stabilizes variance across the range of counts, making low-count genes less noisy and improving interpretability in PCA, clustering, and heatmaps.
 
 ## Paso 7. Melting the Normalized Count Matrix for Visualization
 
@@ -291,8 +289,8 @@ To facilitate downstream plotting and statistical analysis (e.g., violin plots, 
 
 ```{r}
 # vsd all info
-vsd_all <- vst(dds, blind=FALSE)
-melted_norm_counts <- data.frame(melt(assay(vsd_all)))
+rlog_all <- rlog(dds, blind=FALSE)
+melted_norm_counts <- data.frame(melt(assay(rlog_all)))
 # rename columns
 colnames(melted_norm_counts) <- c("gene", "sample_ID", "normalized_counts")
 # join metadata
@@ -305,7 +303,7 @@ Almacenamiento:
 # Save melted_norm_counts
 save(melted_norm_counts, file = paste0(workdir,  "/counts/kallisto_outputs/melted_norm_counts.RData"))
 # Save vsd
-save(vsd_all, file = paste0(workdir,  "/counts/kallisto_outputs/vsd_all.RData"))
+save(rlog_all, file = paste0(workdir,  "/counts/kallisto_outputs/rlog_all.RData"))
 ```
 
 ## Paso 8. Compute z-score transformation
@@ -332,10 +330,10 @@ save(zscore_mat, file = paste0(workdir, "/counts/kallisto_outputs/zscore_mat.RDa
 
 Principal Component Analysis (PCA) of Normalized Expression Data
 
-After applying variance stabilizing transformation (VST), we perform Principal Component Analysis (PCA) to explore the global structure of the data and detect potential clustering patterns among the samples.
+After applying rlog, we perform Principal Component Analysis (PCA) to explore the global structure of the data and detect potential clustering patterns among the samples.
 
 ```{r}
-mat <- as.matrix(vsd) # col = samples, rows  = genes
+mat <- as.matrix(rlog_result) # col = samples, rows  = genes
 pc <- prcomp(t(mat)) # col = genes , rows = samples
 ```
 
@@ -434,7 +432,7 @@ ggsave(p, file = here("Practica_Dia3/figures","PCA.png"), dpi = 300)
 ## Paso 10. Corrección de batch effect
 
 ```{r}
-mat <- assay(vsd_all)
+mat <- assay(rlog_all)
 mm <- model.matrix(~responder, colData(vsd_all))
 mat <- limma::removeBatchEffect(mat, batch=vsd_all$batch, design=mm)
 assay(vsd_all) <- mat
@@ -444,7 +442,7 @@ plotPCA(vsd_all, intgroup= c("responder", "condition"))
 The `design` argument is necessary to avoiding removing variation associated with the treatment conditions. See `?removeBatchEffect` in the *limma* package for details.
 
 ```{r}
-pcaData <- plotPCA(vsd_all, intgroup= c("responder", "condition"), returnData=TRUE)
+pcaData <- plotPCA(rlog_all, intgroup= c("responder", "condition"), returnData=TRUE)
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 ggplot(pcaData, aes(PC1, PC2, color=responder, shape=condition)) +
   geom_point(size=3) +
