@@ -102,7 +102,7 @@ all_transcripts <- rownames(txi.kallisto$abundance)
 length(all_transcripts)
 ```
 
-### Opción B. Importar archivo `.tsv` de `kallisto` (se cargan a nivel de genes) ⭐ Manera correcta  
+### Opción B. Importar archivo `.tsv` de `kallisto` (se cargan a nivel de genes) ⭐ Manera correcta
 
 ```{r}
 # Definir la carpeta donde están los resultados
@@ -377,7 +377,7 @@ ggplot(df, aes(x = Componente, y = Varianza)) +
   theme_minimal()
 ```
 
-### Color by `responder` 
+### Color by `responder`
 
 This PCA data frame (`pca_df`) is ready for visualization, allowing us to assess whether samples cluster according to biological or experimental groups.
 
@@ -433,10 +433,10 @@ ggsave(p, file = here("Practica_Dia3/figures","PCA.png"), dpi = 300)
 
 ```{r}
 mat <- assay(rlog_all)
-mm <- model.matrix(~responder, colData(vsd_all))
-mat <- limma::removeBatchEffect(mat, batch=vsd_all$batch, design=mm)
-assay(vsd_all) <- mat
-plotPCA(vsd_all, intgroup= c("responder", "condition"))
+mm <- model.matrix(~responder, colData(rlog_all))
+mat <- limma::removeBatchEffect(mat, batch=rlog_all$batch, design=mm)
+assay(rlog_all) <- mat
+plotPCA(rlog_all, intgroup= c("responder", "condition"))
 ```
 
 The `design` argument is necessary to avoiding removing variation associated with the treatment conditions. See `?removeBatchEffect` in the *limma* package for details.

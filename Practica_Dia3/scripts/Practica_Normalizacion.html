@@ -104,7 +104,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#paso-3.-filtrar-biotipos" id="toc-paso-3.-filtrar-biotipos" class="nav-link" data-scroll-target="#paso-3.-filtrar-biotipos">Paso 3. Filtrar biotipos</a></li>
   <li><a href="#paso-4.-crearcargar-la-metadata" id="toc-paso-4.-crearcargar-la-metadata" class="nav-link" data-scroll-target="#paso-4.-crearcargar-la-metadata">Paso 4. Crear/Cargar la metadata</a></li>
   <li><a href="#paso-5.-crear-el-objeto-deseq2" id="toc-paso-5.-crear-el-objeto-deseq2" class="nav-link" data-scroll-target="#paso-5.-crear-el-objeto-deseq2">Paso 5. Crear el objeto DESEq2</a></li>
-  <li><a href="#paso-6.-normalización-de-las-cuentas-con-vst" id="toc-paso-6.-normalización-de-las-cuentas-con-vst" class="nav-link" data-scroll-target="#paso-6.-normalización-de-las-cuentas-con-vst">Paso 6. Normalización de las cuentas con VST</a></li>
+  <li><a href="#paso-6.-normalización-de-las-cuentas-con-rlog-log-regularizado" id="toc-paso-6.-normalización-de-las-cuentas-con-rlog-log-regularizado" class="nav-link" data-scroll-target="#paso-6.-normalización-de-las-cuentas-con-rlog-log-regularizado">Paso 6. Normalización de las cuentas con rlog (log regularizado)</a></li>
   <li><a href="#paso-7.-melting-the-normalized-count-matrix-for-visualization" id="toc-paso-7.-melting-the-normalized-count-matrix-for-visualization" class="nav-link" data-scroll-target="#paso-7.-melting-the-normalized-count-matrix-for-visualization">Paso 7. Melting the Normalized Count Matrix for Visualization</a></li>
   <li><a href="#paso-8.-compute-z-score-transformation" id="toc-paso-8.-compute-z-score-transformation" class="nav-link" data-scroll-target="#paso-8.-compute-z-score-transformation">Paso 8. Compute z-score transformation</a></li>
   <li><a href="#paso-9.-visualización-de-pca" id="toc-paso-9.-visualización-de-pca" class="nav-link" data-scroll-target="#paso-9.-visualización-de-pca">Paso 9. Visualización de PCA</a>
@@ -478,8 +478,8 @@ ENSG00000000938 24425.16548</code></pre>
 <span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata) <span class="sc">%&gt;%</span> </span>
 <span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>  DT<span class="sc">::</span><span class="fu">datatable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
-<div class="datatables html-widget html-fill-item" id="htmlwidget-8971905a9c20a39dc949" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-8971905a9c20a39dc949">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["SRR27190676","SRR27190684","SRR27190700","SRR27190685","SRR27190708","SRR27190710"],["p18.S028.day7","p17.S023.day7","p12.S013.day7","p14.S018.day7","p1.S003.day7","p8.S008.day7"],["NR","NR","NR","R","R","R"],["SLE","SLE","SLE","SLE","SLE","SLE"],["d7","d7","d7","d7","d7","d7"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sample_ID<\/th>\n      <th>sample_title<\/th>\n      <th>responder<\/th>\n      <th>condition<\/th>\n      <th>day<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"sample_ID","targets":1},{"name":"sample_title","targets":2},{"name":"responder","targets":3},{"name":"condition","targets":4},{"name":"day","targets":5}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-a07f4d701af23f0017d5" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-a07f4d701af23f0017d5">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6"],["SRR27190676","SRR27190684","SRR27190700","SRR27190685","SRR27190708","SRR27190710"],["p18.S028.day7","p17.S023.day7","p12.S013.day7","p14.S018.day7","p1.S003.day7","p8.S008.day7"],["NR","NR","NR","R","R","R"],["SLE","SLE","SLE","SLE","SLE","SLE"],["d7","d7","d7","d7","d7","d7"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>sample_ID<\/th>\n      <th>sample_title<\/th>\n      <th>responder<\/th>\n      <th>condition<\/th>\n      <th>day<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"sample_ID","targets":1},{"name":"sample_title","targets":2},{"name":"responder","targets":3},{"name":"condition","targets":4},{"name":"day","targets":5}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -518,9 +518,8 @@ colData names(5): sample_ID sample_title responder condition day</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(dds, <span class="at">file =</span> <span class="fu">paste0</span>(workdir, <span class="st">"/counts/kallisto_outputs/dds_cleaned.RData"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="paso-6.-normalización-de-las-cuentas-con-vst" class="level2">
-<h2 class="anchored" data-anchor-id="paso-6.-normalización-de-las-cuentas-con-vst">Paso 6. Normalización de las cuentas con VST</h2>
-<p>Variance Stabilizing Transformation (VST) for Normalization</p>
+<section id="paso-6.-normalización-de-las-cuentas-con-rlog-log-regularizado" class="level2">
+<h2 class="anchored" data-anchor-id="paso-6.-normalización-de-las-cuentas-con-rlog-log-regularizado">Paso 6. Normalización de las cuentas con rlog (log regularizado)</h2>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>counts <span class="ot">&lt;-</span> <span class="fu">assays</span>(dds)<span class="sc">$</span>counts</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">counts</span>(dds))[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -534,35 +533,35 @@ ENSG00000000457         317         507         397         251</code></pre>
 </div>
 <p>We first extract the raw count matrix from the <code>DESeqDataSet</code> object using <code>assays(dds)$counts</code>.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>vsd <span class="ot">&lt;-</span> <span class="fu">vst</span>(counts, <span class="at">blind=</span><span class="cn">FALSE</span>)</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(vsd)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>rlog_result <span class="ot">&lt;-</span> <span class="fu">rlog</span>(counts, <span class="at">blind=</span><span class="cn">FALSE</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(rlog_result)[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                SRR27190676 SRR27190684 SRR27190685 SRR27190700
-ENSG00000000003    6.488942    5.705357    5.323781    5.108291
-ENSG00000000005    5.108291    5.108291    5.108291    5.108291
-ENSG00000000419    7.581290    8.006363    7.832868    8.049477
-ENSG00000000457    8.865825    9.163171    8.538704    8.578504</code></pre>
+ENSG00000000003    3.824322    2.963242    2.633386    2.606693
+ENSG00000000005    0.000000    0.000000    0.000000    0.000000
+ENSG00000000419    7.179552    7.571781    7.412877    7.610603
+ENSG00000000457    8.626372    8.876135    8.347352    8.381828</code></pre>
 </div>
 </div>
-<p>Almacenar counts y cuentas transformadas con VST:</p>
+<p>Almacenar counts y cuentas transformadas con <code>rlog</code>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save vsd</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(vsd, <span class="at">file =</span> <span class="fu">paste0</span>(workdir, <span class="st">"/counts/kallisto_outputs/vsd.RData"</span>))</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(rlog_result, <span class="at">file =</span> <span class="fu">paste0</span>(workdir, <span class="st">"/counts/kallisto_outputs/rlog.RData"</span>))</span>
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Save counts</span></span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(counts, <span class="at">file =</span> <span class="fu">paste0</span>(workdir, <span class="st">"/counts/kallisto_outputs/rawCounts.RData"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The <code>vst()</code> function is then applied to perform a variance stabilizing transformation. Setting <code>blind = FALSE</code> means that the transformation will take into account the experimental design, which is recommended for visualization and downstream comparisons.</p>
+<p>The <code>rlog()</code> function is then applied to perform a regularized log transformation. Setting <code>blind = FALSE</code> means that the transformation will take into account the experimental design, which is recommended when the goal is visualization and downstream comparisons. Unlike a simple log, the regularization stabilizes variance across the range of counts, making low-count genes less noisy and improving interpretability in PCA, clustering, and heatmaps.</p>
 </section>
 <section id="paso-7.-melting-the-normalized-count-matrix-for-visualization" class="level2">
 <h2 class="anchored" data-anchor-id="paso-7.-melting-the-normalized-count-matrix-for-visualization">Paso 7. Melting the Normalized Count Matrix for Visualization</h2>
 <p>To facilitate downstream plotting and statistical analysis (e.g., violin plots, boxplots, or faceted visualizations), we reshape the normalized expression data from wide to long format.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vsd all info</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>vsd_all <span class="ot">&lt;-</span> <span class="fu">vst</span>(dds, <span class="at">blind=</span><span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>rlog_all <span class="ot">&lt;-</span> <span class="fu">rlog</span>(dds, <span class="at">blind=</span><span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>using 'avgTxLength' from assays(dds), correcting for library size</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>melted_norm_counts <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">melt</span>(<span class="fu">assay</span>(vsd_all)))</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>melted_norm_counts <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">melt</span>(<span class="fu">assay</span>(rlog_all)))</span>
 <span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="co"># rename columns</span></span>
 <span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(melted_norm_counts) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gene"</span>, <span class="st">"sample_ID"</span>, <span class="st">"normalized_counts"</span>)</span>
 <span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a><span class="co"># join metadata</span></span>
@@ -573,7 +572,7 @@ ENSG00000000457    8.865825    9.163171    8.538704    8.578504</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Save melted_norm_counts</span></span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(melted_norm_counts, <span class="at">file =</span> <span class="fu">paste0</span>(workdir,  <span class="st">"/counts/kallisto_outputs/melted_norm_counts.RData"</span>))</span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Save vsd</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(vsd_all, <span class="at">file =</span> <span class="fu">paste0</span>(workdir,  <span class="st">"/counts/kallisto_outputs/vsd_all.RData"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(rlog_all, <span class="at">file =</span> <span class="fu">paste0</span>(workdir,  <span class="st">"/counts/kallisto_outputs/rlog_all.RData"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="paso-8.-compute-z-score-transformation" class="level2">
@@ -599,9 +598,9 @@ ENSG00000000457    8.865825    9.163171    8.538704    8.578504</code></pre>
 <section id="paso-9.-visualización-de-pca" class="level2">
 <h2 class="anchored" data-anchor-id="paso-9.-visualización-de-pca">Paso 9. Visualización de PCA</h2>
 <p>Principal Component Analysis (PCA) of Normalized Expression Data</p>
-<p>After applying variance stabilizing transformation (VST), we perform Principal Component Analysis (PCA) to explore the global structure of the data and detect potential clustering patterns among the samples.</p>
+<p>After applying rlog, we perform Principal Component Analysis (PCA) to explore the global structure of the data and detect potential clustering patterns among the samples.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(vsd) <span class="co"># col = samples, rows  = genes</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(rlog_result) <span class="co"># col = samples, rows  = genes</span></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>pc <span class="ot">&lt;-</span> <span class="fu">prcomp</span>(<span class="fu">t</span>(mat)) <span class="co"># col = genes , rows = samples</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ul>
@@ -620,13 +619,20 @@ ENSG00000000457    8.865825    9.163171    8.538704    8.578504</code></pre>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pc<span class="sc">$</span>x)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                   PC1       PC2        PC3        PC4        PC5           PC6
-SRR27190676 -70.131838 -49.12414 -12.838695   9.089795  -2.131742 -4.455439e-13
-SRR27190684  23.679116 -17.82369  65.180756   1.188282  13.781902 -6.656641e-13
-SRR27190685  -2.850016  38.65779 -17.188781  36.951854  36.667658  3.882456e-13
-SRR27190700  68.928365 -31.16133 -37.255944 -13.601083   2.277359 -7.941706e-13
-SRR27190708   7.849527  24.58320   3.763659  20.614554 -54.308425  1.623634e-12
-SRR27190710 -27.475154  34.86817  -1.660994 -54.243403   3.713247  5.784952e-14</code></pre>
+<pre><code>                     PC1       PC2        PC3         PC4        PC5
+SRR27190676 -63.50610605 -39.15683  -9.923313   8.7348321  -2.470926
+SRR27190684  20.21035238 -15.93415  54.614508   0.7214582  11.369584
+SRR27190685  -0.09585189  33.15373 -14.017655  32.0617707  30.392644
+SRR27190700  56.68268157 -29.51693 -31.796644 -11.6198029   2.527754
+SRR27190708   9.45865841  21.18027   2.873670  16.1967593 -45.902362
+SRR27190710 -22.74973442  30.27390  -1.750566 -46.0950173   4.083305
+                      PC6
+SRR27190676  8.883619e-13
+SRR27190684 -2.927132e-14
+SRR27190685 -3.816731e-13
+SRR27190700  7.745570e-14
+SRR27190708 -1.311315e-12
+SRR27190710  8.060139e-13</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -732,11 +738,11 @@ Too few points to calculate an ellipse</code></pre>
 <section id="paso-10.-corrección-de-batch-effect" class="level2">
 <h2 class="anchored" data-anchor-id="paso-10.-corrección-de-batch-effect">Paso 10. Corrección de batch effect</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> <span class="fu">assay</span>(vsd_all)</span>
-<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>mm <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span>responder, <span class="fu">colData</span>(vsd_all))</span>
-<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> limma<span class="sc">::</span><span class="fu">removeBatchEffect</span>(mat, <span class="at">batch=</span>vsd_all<span class="sc">$</span>batch, <span class="at">design=</span>mm)</span>
-<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(vsd_all) <span class="ot">&lt;-</span> mat</span>
-<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCA</span>(vsd_all, <span class="at">intgroup=</span> <span class="fu">c</span>(<span class="st">"responder"</span>, <span class="st">"condition"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> <span class="fu">assay</span>(rlog_all)</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>mm <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(<span class="sc">~</span>responder, <span class="fu">colData</span>(rlog_all))</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>mat <span class="ot">&lt;-</span> limma<span class="sc">::</span><span class="fu">removeBatchEffect</span>(mat, <span class="at">batch=</span>rlog_all<span class="sc">$</span>batch, <span class="at">design=</span>mm)</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="fu">assay</span>(rlog_all) <span class="ot">&lt;-</span> mat</span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plotPCA</span>(rlog_all, <span class="at">intgroup=</span> <span class="fu">c</span>(<span class="st">"responder"</span>, <span class="st">"condition"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>using ntop=500 top features by variance</code></pre>
 </div>
@@ -757,7 +763,7 @@ Too few points to calculate an ellipse</code></pre>
 </div>
 <p>The <code>design</code> argument is necessary to avoiding removing variation associated with the treatment conditions. See <code>?removeBatchEffect</code> in the <em>limma</em> package for details.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>pcaData <span class="ot">&lt;-</span> <span class="fu">plotPCA</span>(vsd_all, <span class="at">intgroup=</span> <span class="fu">c</span>(<span class="st">"responder"</span>, <span class="st">"condition"</span>), <span class="at">returnData=</span><span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>pcaData <span class="ot">&lt;-</span> <span class="fu">plotPCA</span>(rlog_all, <span class="at">intgroup=</span> <span class="fu">c</span>(<span class="st">"responder"</span>, <span class="st">"condition"</span>), <span class="at">returnData=</span><span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>using ntop=500 top features by variance</code></pre>
 </div>
