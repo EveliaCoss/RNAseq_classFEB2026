@@ -645,7 +645,8 @@ class: inverse, center, middle
 - Explicación de las gráficas generadas por MultiQC sobre los **datos procesados** posterior a la limpieza de adaptadores y remoción de secuencias de mala calidad.
     + ¿Se eliminaron los adaptadores que contenian tus muestras? 
     + Tamaño del read inicial (datos crudos) y final (datos procesados)
-- Realiza un diagrama de flujo donde me muestros: inputs, ouputs, programas y los procesos a seguir, desde los datos crudos hasta el alineamiento.     
+- Crea un **diagrama de flujo** donde me muestres: inputs, ouputs, programas y los procesos a seguir, desde los datos crudos hasta el alineamiento.
+- Realiza el alineamiento y conteo con los **datos procesados** e importa los datos en R (debes mostrarme el código y que la variable cargo correctamente, junto con sus dimensiones). 
 
 **Subir en la tarea de Google Classroom**
 
