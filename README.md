@@ -99,8 +99,8 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 - Presentación: 
   + [Normalización de los datos](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_normalizacion_batcheffect.html#1)
   + [Corrección por *batch effect*](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_normalizacion_batcheffect.html#1)
-- Ejercicio en clase para Descarga: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.qmd)
-- Ejercicio en clase, visualizar reporte: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.html)
+- Ejercicio en clase para Descarga: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.qmd)
+- Ejercicio en clase, visualizar reporte: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.html)
 
 ### Dia 5. DEG con kallisto y DESeq2
 
