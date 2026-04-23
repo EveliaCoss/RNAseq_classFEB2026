@@ -130,249 +130,78 @@ background-size: 1210px,210px, cover
 
 ---
 
-class: inverse, center, middle
+---
 
-`r fontawesome::fa("chart-area", height = "3em")`
-# 1. Normalización de los datos
+## shrinkage
+
+En estadística y en el contexto de DESeq2, shrinkage significa “contracción” o “regularización” de estimaciones.
+
+- **¿Qué es shrinkage?**
+Cuando estimamos parámetros como la dispersión o el log2 fold change (βᵢ) en datasets pequeños o con baja cobertura, las estimaciones pueden ser muy inestables.
+
+El shrinkage aplica un ajuste que “empuja” esas estimaciones extremas hacia valores más moderados, basándose en información global del dataset.
+
+Es una forma de regularización bayesiana: combina la información específica de cada gen con la información promedio de todos los genes.
+
+Ejemplos en DESeq2
+Dispersión (αᵢ)
+
+Cada gen tiene su propia dispersión, pero con pocos datos puede ser ruidosa.
+
+DESeq2 aplica shrinkage hacia una curva suavizada de dispersión vs media, estabilizando las estimaciones.
+
+Log2 fold change (βᵢ)
+
+Genes con baja expresión pueden mostrar fold changes exagerados.
+
+El shrinkage reduce esos valores extremos, dando estimaciones más confiables para interpretación biológica.
+
+---
+Importancia
+Evita falsos positivos debidos a estimaciones inestables.
+
+Mejora la reproducibilidad de los resultados.
+
+Permite interpretar los cambios de expresión con mayor confianza, especialmente en datasets con pocas réplicas.
+
 
 ---
 
-.pull-left[
+https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors
 
-## ¿Qué significa normalizar?
-
-Normalizar es ajustar los datos para que puedan compararse entre células.
-- Imagina que cada célula es como un estudiante que entrega una lista de palabras escritas.
-- Algunos escriben mucho, otros poco.
-- Para poder comparar, necesitamos ponerlos en la misma “escala”.
-]
-
-.pull-right[  
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/normalization_methods_composition.png")
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = cts,
+                              colData = coldata,
+                              design= ~ batch + condition)
+dds <- DESeq(dds)
+resultsNames(dds) # lists the coefficients
+res <- results(dds, name="condition_trt_vs_untrt")
+# or to shrink log fold changes association with condition:
+res <- lfcShrink(dds, coef="condition_trt_vs_untrt", type="apeglm")
 ```
-]
-
-
-.footnote[Imagen tomada de:
-[Introduction to DGE - ARCHIVED](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
-]
 
 ---
+Métodos disponibles en lfcShrink()
+Normal prior (2014): usa un prior normal centrado en 0.
 
-## Normalización de los datos
-### ¿Por qué es necesario normalizar?
+apeglm: prior adaptativo tipo Student-t, más robusto para conteos bajos.
 
-Nuestros datos están sujetos a **sesgos técnicos** y **biológicos** que provocan **variabilidad** en las cuentas.
+ashr: mezcla de normales, ajusta mejor distribuciones complejas.
 
-Si queremos hacer **comparaciones de niveles de expresión entre muestras** es necesario *ajustar* los datos tomando en cuenta estos sesgos.
+```{r}
+res <- results(dds)
+res_shrink <- lfcShrink(dds, coef=2, type="apeglm")
 
-- Análisis de expresión diferencial
-
-- Visualización de datos
-
-En general, siempre que estemos comparando expresión entre nuestros datos.
+```
 
 ---
-.pull-left[
-## Métodos de normalización
+📊 Interpretación práctica
+Genes con alta cobertura → poco shrinkage (se mantienen valores).
 
-Ejemplo: **DESEq2**
+Genes con baja cobertura → fuerte shrinkage (se reducen fold changes extremos).
 
-```{r, echo=FALSE, out.width='120%', fig.align='center'}
-knitr::include_graphics("figures/pipeline_normalizacion.png")
-```
+Resultado: estimaciones más estables y confiables para ranking y visualización.
 
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='120%', fig.align='center'}
-knitr::include_graphics("figures/normalization.png")
-```
-]
-
-
-.left[.footnote[.black[
-Revisa el [manual de DESEq](https://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#contrasts)
-]]]
-
----
-
-## Métodos de normalización
-
-.pull-left[
-
-#### **Counts per million (CPM)** o **Reads per million (RPM) **  
-
-`CPM o RPM = C * 10^6/N`
-
-- C: Numero de reads mapeados en el gen
-- N: Numero total de reads mapeados
-
-Ejemplo: Si tenemos 5 millones de reads o lecturas (M). Y la mayoría  de ellos alinean con el genoma (4 M). Encontramos un gen con 5000 reads. 
-
-- ¿Cuál será su valor en CPM? 
-
-`CPM o RPM = (5000 * 10^6) / (4 * 10^6) = 1250`
-
-]
-
-.pull-right[
-
-> **NOTA:** El CPM no contempla el tamaño del gen en la normalización.   
-
-> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de DESEq2 (rlog o vst) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
-> 
-> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
-]
-
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://www.reneshbedre.com/blog/expression_units.html).
-]]]
-
----
-
-## Empleo de Z-score para graficas
-
-La normalización con **Z-score** transforma los datos para que cada gen tenga una media de 0 y una desviación estándar de 1. Esto permite comparar genes con diferentes niveles de expresión en la misma escala.
-
-> Motivo: Los genes con varianza cero tienen la misma expresión en todas las muestras y no aportan información útil.
-
-.pull-left[
-
-```{r, eval=FALSE}
-# 1) Filtar genes de varianza cero
-var_non_zero <- apply(counts, 1, var) !=0 
-# 2) Aplicar z-score
-filtered_counts <- counts[var_non_zero, ]
-# transponer
-zscores <- t(scale(t(filtered_counts)))
-dim(zscores) #[1] 18782   165
-# 3) convertir a matriz
-zscore_mat <- as.matrix(zscores)
-```
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='80%', fig.align='center'}
-knitr::include_graphics("figures/SLE_heatmap_zscore.png")
-```
-]
-
-.left[.footnote[.black[
-[Gene expression profiling of dendritic cell tolerance dysfunction in women with Systemic lupus erythematosus, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
-]]]
-
----
-
-## **DESeq2** emplea `size factor` (median of ratios) para normalizar las raw counts
-
-.pull-left[
-Cuando se emplea la funcion `DESeq` internamente estan realizandose los siguientes procesos para **cada gen**:
-
-```{r, eval=FALSE}
-dds <- estimateSizeFactors(dds)
-dds <- estimateDispersions(dds)
-dds <- nbinomWaldTest(dds)
-```
-
-[Manual de DESeq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors)
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/sizefactor.png")
-```
-]
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html).
-]]]
-
----
-
-class: inverse, center, middle
-
-`r fontawesome::fa("terminal", height = "3em")`
-# 4. Detección y corrección por *batch effect*
-
----
-
-# Recordatorio: Corrección por *Batch effect*
-
-Buen diseño experimental con un minimo de 3 Réplicas biológicas, pero aún puede haber variación técnica.
-
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/batch_effect_pca2.png")
-```
-
-.left[.footnote[.black[
-Imagen proveniente de [Hicks, et al. 2015. bioRxiv](https://www.biorxiv.org/content/early/2015/08/25/025528)
-]]]
-
----
-
-## Paquetes para Corrección por Batch effect
-
-Algunos ejemplos:
-
-- funcion [ComBat](https://www.rdocumentation.org/packages/sva/versions/3.20.0/topics/ComBat) del paquete [SVA](https://www.bioconductor.org/packages/release/bioc/html/sva.html)
-
-- funcion [removeBatchEffect](https://web.mit.edu/~r/current/arch/i386_linux26/lib/R/library/limma/html/removeBatchEffect.html) del paquete [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
-
-- Paquete [batchman](https://cran.r-project.org/web/packages/batchtma/vignettes/batchtma.html)
-
-.left[.footnote[.black[
-Para más ejemplos puedes verlos dando click [aquí](https://evayiwenwang.github.io/Managing_batch_effects/adjust.html#correcting-for-batch-effects).
-]]]
-
----
-
-# Detección de *batch effect*
-
-## Análisis de Componentes Principales (PCA)
-
-.pull-left[
-
-Es una herramienta para el *análisis exploratorio* de los datos que permite visualizar la **variación presente de un set de datos** con muchas **variables**.
-
-En X es la mayor proporción de la varianza.
-En Y la menor variabilidad.
-
-**Cada dimensión o componente principal** generado por PCA será una **combinación lineal de las variables originales.**
-
-PCA **reduce la dimensionalidad** pero **NO reduce el número de variables en los datos**.
-
-Para más información visita [Managing batch effects](https://evayiwenwang.github.io/Managing_batch_effects/detect.html).
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/pca_example.png")
-```
-]
-
----
-
-## Ejemplo: PCA + densidad
-
-.pull-left[
-
-```{r, eval=F}
-library(cowplot)
-library(dplyr)
-library(ggplot2)
-```
-
-Codigo proveniente de [Stackoverflow](https://stackoverflow.com/questions/73554215/how-to-add-density-plot-per-component-in-pca-plot-in-r).
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/pca_example2.png")
-```
-]
 
 ---
 class: center, middle

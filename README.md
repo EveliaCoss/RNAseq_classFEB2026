@@ -81,22 +81,26 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 - Fecha: martes 21 de abril, 2026
 - Presentación:
-    - [Fuentes de error](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
-    - [Pipelines de Kallisto](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#9)
-    - [Importación de salida de kallisto en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#42)
-    - [Pipelines de STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#20)
-    - [Importación de salida de STAR en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#51)
+    + [Fuentes de error](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#1)
+    + [Pipelines de Kallisto](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#9)
+    + [Importación de salida de kallisto en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#42)
+    + [Pipelines de STAR](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#20)
+    + [Importación de salida de STAR en R](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia3_ImportarDatos.html#51)
 - Scripts: https://github.com/EveliaCoss/RNAseq_classFEB2026/tree/main/Practica_Dia3/scripts/
 - Lecturas y cursos recomendados:
-    - [Metodos de normalizacion](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
-    - [RNA-seq workflow: gene-level exploratory analysis and differential expression](https://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#pca-plot-using-generalized-pca)
-    - [End-to-end RNA-Seq workflow](https://www.bioconductor.org/help/course-materials/2015/CSAMA2015/lab/rnaseqCSAMA.html)
-    - [Transformation, Normalization, and Batch Effect Removal](https://bio-protocol.org/exchange/protocoldetail?id=4462&type=1)
+    + [Metodos de normalizacion](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html#2-create-deseq2-object)
+    + [RNA-seq workflow: gene-level exploratory analysis and differential expression](https://www.bioconductor.org/packages/devel/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#pca-plot-using-generalized-pca)
+    + [End-to-end RNA-Seq workflow](https://www.bioconductor.org/help/course-materials/2015/CSAMA2015/lab/rnaseqCSAMA.html)
+    + [Transformation, Normalization, and Batch Effect Removal](https://bio-protocol.org/exchange/protocoldetail?id=4462&type=1)
 
-### Dia 4. Normalización y Corrección por batch effect 🪲
+### Dia 4. Normalización y Corrección por *batch effect* 🪲
 
 - Fecha: jueves 23 de abril, 2026
-- Presentación:
+- Presentación: 
+  + [Normalización de los datos](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_normalizacion_batcheffect.html#1)
+  + [Corrección por *batch effect*](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_normalizacion_batcheffect.html#1)
+- Ejercicio en clase para Descarga: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.qmd)
+- Ejercicio en clase, visualizar reporte: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.html)
 
 ### Dia 5. DEG con kallisto y DESeq2
 
@@ -115,17 +119,6 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
     - Heatmap con [ComplexHeatmap -  Github](https://github.com/jokergoo/ComplexHeatmap)
     - Heatmap con [ComplexHeatmap -  manual](https://jokergoo.github.io/ComplexHeatmap-reference/book/)
 
-### Entregable 3: Reporte final 
-
-En equipos de 3 personas buscar, descargar y analizar datos de RNA-Seq que provengan de un **artículo científico**.
-A continuación encontrarás la [Rúbrica de evaluación](https://docs.google.com/document/d/1_RQxoMQaVy8SgOsA7_L_BkKbBXtABTt2pbwAaIX8DcE/edit?usp=sharing) con la cual se te calificara. 
-
-### Calificación final
-
-- **Entregable 1:** Eleccion de transcriptomas (10%)
-- **Entregable 2:** Calidad de los transcriptomas (10%)
-- **Entregable 3:** Reporte final (80%)
-
 ## Requisitos
 
 - Contar con una terminal en tu sistema operativo
@@ -135,31 +128,6 @@ A continuación encontrarás la [Rúbrica de evaluación](https://docs.google.co
 
 ## Pipeline ⚡
 
-### Pasos a seguir para el análisis de los datos de **RNA-Seq**
-
-- Script [`load_data_inR.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/load_data_inR.R):
-
-  **1)** Importar datos en R (archivo de cuentas) + metadatos y **2)** Crear una matriz de cuentas con todos los transcriptomas
-
-- Script [`DEG_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/DEG_analysis.R):
-
-  **3)** Crear el archivo `dds` con `DESeq2`, **4)** Correr el análisis de Expresión Diferencial de los Genes (DEG), **5)** Normalización de los datos, **6)** Detección de batch effect y **7)** Obtener los resultados de los contraste de DEG
-
-Los siguientes script se pueden emplear para todas las especies, siendo sencillo su formato y empleo:
-
-- Script [`VisualizacionDatos.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia3/scripts/VisualizacionDatos.R):
-
-  **8)** Visualización de los datos
-
-- Script [`GOterms_analysis.R`](https://github.com/EveliaCoss/RNAseq_classFEB2024/blob/main/Practica_Dia4/scripts/GOterms_analysis.R):
-
-  **9)** Análisis de Terminos funcionales (GO terms)
-
-## Clase para mejorar tus skills
-
-- Crear llaves y alias
-
-Puedes crear llaves (ssh-keygen) y alias para acceder a los servidores de una manera segura y rápida: https://github.com/EveliaCoss/keygen
 
 ## Clase de retroalimentación (X 2026)
 

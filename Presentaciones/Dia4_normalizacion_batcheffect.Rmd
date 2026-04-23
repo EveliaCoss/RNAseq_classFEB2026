@@ -278,6 +278,7 @@ tpm
 ```
 
 ]
+
 ---
 
 .pull-left[
@@ -314,6 +315,45 @@ fpkm  # Fragments Per Kilobase of transcript per Million mapped fragments
 
 ---
 
+class: inverse, center, middle
+
+`r fontawesome::fa("chart-area", height = "3em")`
+# 2. Normalización para la visualización de los datos con `DESEq2`
+
+---
+
+.pull-left[
+## `rlog` y `vst` en `DESEq2`
+
+Ambos sirven para transformar los conteos con fines de **visualización y exploración**, pero se usan en contextos distintos:
+
+- Usa `rlog` si:
+  + Tienes **pocas muestras** (ej. <30).
+  + Tus datos presentan grandes diferencias en tamaño de biblioteca.
+  + Necesitas una transformación más robusta para detección de outliers o análisis exploratorio detallado.
+
+- Usa `vst` si:
+  + Tienes **muchas muestras** (ej. >30).
+  + Buscas velocidad y eficiencia sin perder estabilidad en la varianza.
+  + Es más rápido y adecuado para datasets grandes.
+
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width='120%', fig.align='center'}
+knitr::include_graphics("figures/pipeline_normalizacion.png")
+```
+
+
+> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de `DESEq2` (`rlog` o `vst`) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
+> 
+> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
+
+]
+
+
+---
+
 ## Empleo de Z-score para graficas
 
 La normalización con **Z-score** transforma los datos para que cada gen tenga una media de 0 y una desviación estándar de 1. Esto permite comparar genes con diferentes niveles de expresión en la misma escala.
@@ -341,52 +381,21 @@ knitr::include_graphics("figures/SLE_heatmap_zscore.png")
 ```
 ]
 
-.footnote[Imagen tomada de:
-[Hernandez-Ledesma, Coss-Navarrete, et-al, BioRxiv](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
+.footnote[Imagen tomada del GitHub: [SLE_Transcriptomic_analysis_tolerogenic](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic); relacionado con el artículo:
+[Hernandez-Ledesma, Coss-Navarrete, *et-al*, *BioRxiv*](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
 ]
 
----
-
-> **NOTA:** Podemos usar Z-scores, TPM, log2 Fold Change, cuentas normalizadas de DESEq2 (rlog o vst) o el método que queramos solo para la visualización de datos normalizados, pero NO para usar el resultado en el análisis de expresión diferencial (DEG).
-> 
-> **Para DEG solo usaremos DESEq2 y edgeR como métodos confiables en estos análisis.**
-
----
-
-## **DESeq2** emplea `size factor` (median of ratios) para normalizar las raw counts
-
-.pull-left[
-Cuando se emplea la funcion `DESeq` internamente estan realizandose los siguientes procesos para **cada gen**:
-
-```{r, eval=FALSE}
-dds <- estimateSizeFactors(dds)
-dds <- estimateDispersions(dds)
-dds <- nbinomWaldTest(dds)
-```
-
-[Manual de DESeq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors)
-]
-
-.pull-right[
-```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/sizefactor.png")
-```
-]
-
-.footnote[
-Para más ejemplos puedes verlos dando click [aquí](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html).
-]
 
 ---
 
 class: inverse, center, middle
 
-`r fontawesome::fa("terminal", height = "3em")`
-# 4. Detección y corrección por *batch effect*
+`r fontawesome::fa("flask", height = "3em")`
+# 3. Detección y corrección por *batch effect*
 
 ---
 
-# Recordatorio: Corrección por *Batch effect*
+## Recordatorio: Corrección por *batch effect*
 
 Buen diseño experimental con un minimo de 3 Réplicas biológicas, pero aún puede haber variación técnica.
 
@@ -400,13 +409,46 @@ Imagen proveniente de [Hicks, et al. 2015. bioRxiv](https://www.biorxiv.org/cont
 
 ---
 
-## Paquetes para Corrección por Batch effect
+.pull-left[
+## Detección de *batch effect* mediante la reducción de dimensiones 
+
+### Objetivos principales
+
+- **Simplificar** los datos sin perder la señal biológica importante.
+- **Eliminar ruido y redundancia** de genes poco informativos.
+- Facilitar la visualización en 2D o 3D (`PCA, UMAP, t-SNE`).
+- **Reduce la dimensionalidad** pero **NO reduce el número de variables en los datos**.
+- **Cada dimensión o componente principal** generado por PCA será una **combinación lineal de las variables originales.**
+]
+
+.pull-right[.content-box-blue[
+Interpretación: 
+
+- **bulk RNA-seq - Cada punto = una muestra.**
+- **scRNA-seq - Cada punto = una célula individual.**
+- **La cercanía entre puntos** = *similitud* en sus perfiles de expresión.
+- Clústeres o grupos = *poblaciones celulares distintas (tipos o estados)*.
+- Colores = **categorías:** tipo celular, condición experimental, expresión de un gen específico, etc.
+- Coordenadas: En `X` es la mayor proporción de la varianza. En `Y` la menor variabilidad.
+
+```{r, echo=FALSE, out.width='40%', fig.align='center'}
+knitr::include_graphics("figures/pca_example.png")
+```
+
+]]
+
+.footnote-right[ 
+[Explicación completa de un UMAP](https://biostatsquid.com/umap-simply-explained/)]
+
+---
+
+## Paquetes para Corrección por *batch effect*
 
 Algunos ejemplos:
 
-- funcion [ComBat](https://www.rdocumentation.org/packages/sva/versions/3.20.0/topics/ComBat) del paquete [SVA](https://www.bioconductor.org/packages/release/bioc/html/sva.html)
+- función [`ComBat`](https://www.rdocumentation.org/packages/sva/versions/3.20.0/topics/ComBat) del paquete [SVA](https://www.bioconductor.org/packages/release/bioc/html/sva.html)
 
-- funcion [removeBatchEffect](https://web.mit.edu/~r/current/arch/i386_linux26/lib/R/library/limma/html/removeBatchEffect.html) del paquete [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
+- función [`removeBatchEffect`](https://web.mit.edu/~r/current/arch/i386_linux26/lib/R/library/limma/html/removeBatchEffect.html) del paquete [limma](https://bioconductor.org/packages/release/bioc/html/limma.html)
 
 - Paquete [batchman](https://cran.r-project.org/web/packages/batchtma/vignettes/batchtma.html)
 
@@ -416,53 +458,234 @@ Para más ejemplos puedes verlos dando click [aquí](https://evayiwenwang.github
 
 ---
 
-# Detección de *batch effect*
-
-## Análisis de Componentes Principales (PCA)
+## Visualización de la distribución de las muestras por **PCA**
 
 .pull-left[
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/PCA.png")
+```
+]
 
-Es una herramienta para el *análisis exploratorio* de los datos que permite visualizar la **variación presente de un set de datos** con muchas **variables**.
+.pull-right[
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/PCA_samples.png")
+```
+]
 
-En X es la mayor proporción de la varianza.
-En Y la menor variabilidad.
+.footnote[Imagenes tomadas del GitHub: [SLE_Transcriptomic_analysis_tolerogenic](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic); relacionado con el artículo:
+[Hernandez-Ledesma, Coss-Navarrete, *et-al*, *BioRxiv*](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
+]
 
-**Cada dimensión o componente principal** generado por PCA será una **combinación lineal de las variables originales.**
+---
 
-PCA **reduce la dimensionalidad** pero **NO reduce el número de variables en los datos**.
+class: inverse, center, middle
 
-Para más información visita [Managing batch effects](https://evayiwenwang.github.io/Managing_batch_effects/detect.html).
+`r fontawesome::fa("chart-line", height = "3em")`
+# 4. Normalización para el análisis de los DEG de los datos con `DESEq2`
+
+---
+
+## Teoría detrás de DESeq2
+
+- **Input:** matrices de conteos crudos por gen y muestra.
+- **Problema central:** los conteos de RNA-seq son discretos, dependen de la *profundidad de secuenciación y presentan una relación fuerte entre media y varianza*.
+- **Modelo:** `DESeq2` ajusta un **modelo lineal generalizado (GLM)** con **distribución binomial negativa**.
+- **Normalización:** aplica `size factors` para corregir diferencias de tamaño de librería.
+- **Dispersión:** estima la *variabilidad biológica y técnica de cada gen*, aplicando “shrinkage” para estabilizar las estimaciones en datasets pequeños.
+- **Inferencia:** combina estas estimaciones para probar hipótesis de expresión diferencial.
+
+.footnote[
+ [Manual de DESeq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors)
+]
+
+---
+
+## Rol del `size factor` en `DESeq2`
+
+.pull-left[ 
+- Cada muestra tiene distinta profundidad de secuenciación (número total de lecturas).
+- El `size factor` ajusta las cuentas crudas para que sean comparables entre muestras, eliminando ese sesgo técnico.
+- La normalización con `size factors` asegura que las diferencias observadas en la expresión se deban a la **biología y no al tamaño de librería**.
+
+]
+
+.pull-right[  
+```{r, echo=FALSE, out.width='80%', fig.align='center'}
+knitr::include_graphics("figures/normalization_methods_composition.png")
+```
+]
+
+.footnote[Imagen tomada de:
+[Introduction to DGE - ARCHIVED](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
+]
+
+---
+
+## **DESeq2** emplea `size factor` (median of ratios) para normalizar las raw counts
+
+.pull-left[
+Cuando se emplea la función `DESeq()` internamente estan realizandose los siguientes procesos para **cada gen** empleando la prueba de **Wald**:
+
+```{r, eval=FALSE}
+# 1. Estimación de los factores de tamaño (size factor) (sj)
+dds <- estimateSizeFactors(dds)
+# 2. Estimación de la dispersión (𝛼𝑖) 
+dds <- estimateDispersions(dds)
+# 3. Ajuste del modelo lineal generalizado (GLM) de distribución binomial negativa para los coeficientes (𝛽𝑖) y cálculo de las estadísticas de Wald
+dds <- nbinomWaldTest(dds)
+```
+
 ]
 
 .pull-right[
 ```{r, echo=FALSE, out.width='60%', fig.align='center'}
-knitr::include_graphics("figures/pca_example.png")
+knitr::include_graphics("figures/sizefactor.png")
 ```
+]
+
+.footnote[
+Para más ejemplos puedes verlos dando click [aquí](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/04b_DGE_DESeq2_analysis.html); [Manual de DESeq2](https://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#control-features-for-estimating-size-factors)
 ]
 
 ---
 
-## Ejemplo: PCA + densidad
+## ¿Por qué usa el test de **Wald**?
+
+- El test de **Wald** evalúa si el coeficiente estimado (log2 fold change, βᵢ) es significativamente distinto de cero.
+- Es adecuado para comparaciones directas entre dos condiciones (ej. tratamiento vs control).
+- Permite obtener un ***valor p para cada gen***, que luego se ajusta por pruebas múltiples (FDR).
+- Es más eficiente para contrastes simples que el test de **razón de verosimilitud (LRT)**, que se usa en diseños más complejos (ej. múltiples grupos o interacciones).
+
+.footnote[
+[Exploring DESeq2 results from the Wald test](https://hbctraining.github.io/Intro-to-DGE-Quarto/lessons/10_wald_test_results.html?utm_source=copilot.com); [Gene-level differential expression analysis with DESeq2](https://hbctraining.github.io/DGE_workshop_salmon/lessons/05_DGE_DESeq2_analysis2.html)
+]
+
+---
+
+## ¿Por qué se basa en la **distribución binomial negativa (NB)**?
+
+- Los conteos de RNA-seq muestran **sobre-dispersión**: la varianza es mayor que la media, lo que la distribución de Poisson no puede modelar.
+- La **binomial negativa** introduce un parámetro de dispersión que permite capturar esta variabilidad extra.
+- Esto refleja mejor la **realidad biológica**: genes con la misma media de expresión pueden tener distinta variabilidad entre muestras.
+- Gracias a este modelo, `DESeq2` puede realizar **inferencias más robustas incluso con pocos replicados**.
 
 .pull-left[
+- La **Media** esta dada por:
+$$
+E[X] = \mu
+$$
+- La **varianza** está dada por:
 
-```{r, eval=F}
-library(cowplot)
-library(dplyr)
-library(ggplot2)
-```
-
-Codigo proveniente de [Stackoverflow](https://stackoverflow.com/questions/73554215/how-to-add-density-plot-per-component-in-pca-plot-in-r).
+$$
+Var[X] = \mu + \frac{\mu^2}{\alpha}
+$$
 ]
 
 .pull-right[
-```{r, echo=FALSE, out.width='100%', fig.align='center'}
-knitr::include_graphics("figures/pca_example2.png")
-```
+Donde:
+
+- $X$ corresponde al número de lecturas (conteos) que se asignan a un gen en una muestra.
+- $\mu$ es la media de la distribución  
+- $\alpha$ es el parámetro de dispersión, que captura la variación adicional respecto a la distribución de Poisson
+]
+
+.footnote[
+[Exploring DESeq2 results from the Wald test](https://hbctraining.github.io/Intro-to-DGE-Quarto/lessons/10_wald_test_results.html?utm_source=copilot.com); [Gene-level differential expression analysis with DESeq2](https://hbctraining.github.io/DGE_workshop_salmon/lessons/05_DGE_DESeq2_analysis2.html); [Métodos de expresión diferencial](https://nbisweden.github.io/excelerate-scRNAseq/session-de/session-de-methods.html)
 ]
 
 ---
+
+## Interpretación en RNA-seq
+
+.pull-left[
+- Los conteos de genes no siguen exactamente una Poisson porque la **varianza suele ser mayor que la media**.
+- La binomial negativa introduce $\alpha$ para capturar esa **variabilidad extra**.
+- Genes con la misma media ($\mu$) pueden tener distinta dispersión, reflejando diferencias biológicas o técnicas.
+
+.content-box-blue[
+- 📌 Conclusión:
+  + Valores **pequeños** de $\alpha$ → gran sobre-dispersión, varianza muy alta.
+  + Valores **grandes** de $\alpha$ → menos sobre-dispersión, varianza más cercana a la media.
+  + En RNA-seq, DESeq2 estima $\alpha$ para cada gen porque distintos genes pueden tener distinta estabilidad en su expresión.
+  ]
+]
+
+.pull-right[
+- ¿Cómo se interpreta la variabilidad extra?
+  + Si $\alpha$ **es pequeño** (ej. 1/100 = 0.01), el término $\frac{\mu^2}{\alpha}$ se vuelve **muy grande**
+  + Esto significa que la **varianza es mucho mayor que la media**, reflejando una alta sobre-dispersión.
+  + En la práctica: los conteos de ese gen fluctúan mucho más de lo que esperarías bajo una Poisson, incluso si la media $\mu$ es estable.
+  
+```{r, echo=FALSE, out.width='100%', fig.align='center'}
+knitr::include_graphics("figures/NB_distribucion.png")
+```
+
+]
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("feather", height = "3em")`
+## Tarea para el **Martes 28 de abril, 2026**
+### Reporte de calidad de las secuencias crudas y procesadas, Visualización del pipeline propuesto
+
+**Subir en la tarea de Google Classroom**
+
+---
+
+### Tarea
+## Cada equipo debe entregarme un documento en formato `Rmd` o `Qmd` y `HTML` que contenga la siguiente información:
+
+- Descripción de los datos (entregable 1).
+- Explicación de las gráficas generadas por MultiQC sobre los **datos crudos** (entregable 2).
+- Conclusión sobre los **datos crudos** (entregable 2): 
+    + ¿Son viables para continuar con el análisis? 
+    + ¿Qué pasos deben seguirse para mejorar la calidad de los datos?
+- Explicación de las gráficas generadas por MultiQC sobre los **datos procesados** posterior a la limpieza de adaptadores y remoción de secuencias de mala calidad.
+    + ¿Se eliminaron los adaptadores que contenian tus muestras? 
+    + Tamaño del read inicial (datos crudos) y final (datos procesados)
+- Realiza un diagrama de flujo donde me muestros: inputs, ouputs, programas y los procesos a seguir, desde los datos crudos hasta el alineamiento.     
+
+**Subir en la tarea de Google Classroom**
+
+---
+
+.pull-left[
+## Ejemplo de mi diagrama de flujo
+]
+
+.pull-right[
+
+```{r, echo=FALSE, out.width='60%', fig.align='center'}
+knitr::include_graphics("figures/diagrama_flujo.png")
+```
+]
+
+.footnote[Imagen relacionada con el artículo:
+[Hernandez-Ledesma, Coss-Navarrete, *et-al*, *BioRxiv*](https://www.biorxiv.org/content/10.64898/2025.12.21.695630v1)
+]
+
+---
+
+class: inverse, center, middle
+
+`r fontawesome::fa("circle-nodes", height = "3em")`
+# Ejercicio de repaso
+
+---
+
+# Ejercicio de repaso
+
+- Descarga el archivo: [Practica3.qmd](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.qmd)
+- Visualización del reporte final: [Practica3](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/Practica_Normalizacion.html)
+
+---
+
 class: center, middle
 
 `r fontawesome::fa("code", height = "3em")`
-# 
+# Martes 28 de abril 2026  
+## Análisis de expresión diferencial
+
+Gracias por tu atención, respira y coméntame tus dudas. 
