@@ -103,12 +103,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 - Ejercicio en clase, visualizar reporte: [Práctica 1](https://eveliacoss.github.io/RNAseq_classFEB2026/Practica_Dia3/scripts/Practica_Normalizacion.html)
 - Código empleado: [Step1_ImportData.qmd](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic/blob/main/Step1_ImportData.qmd); [Step2_PCA.qmd](https://github.com/NeuroGenomicsMX/SLE_Transcriptomic_analysis_tolerogenic/blob/main/Step2_PCA.qmd)
 
-### Dia 5. DEG con kallisto y DESeq2
-
-- Fecha: martes 28 de abril, 2026
-- Presentación:
-
-### Dia 6. GSEA - Análisis funcional de los genes diferencialmente expresados
+### Dia 5. DEG con kallisto o STAR y DESeq2 / GSEA - Análisis funcional de los genes diferencialmente expresados
 
 - Fecha: jueves 30 de abril, 2026
 - Presentación:

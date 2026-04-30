@@ -1,0 +1,188 @@
+---
+title: "ISG_Hypergeometrico"
+---
+
+**Probabilidad de obtener 32 ISGs de mis 94 DEGs**
+
+**Enrichment of interferon‑stimulated genes (ISGs) among the differentially expressed genes (DEGs) was assessed using a hypergeometric over‑representation test.** The background universe (*N*) was defined as the total number of genes that passed expression filtering and were included in the differential expression analysis (total: 21718 genes). The ISG reference set (*K*) consisted of 423 curated ISGs compiled from published datasets (37). For each comparison, we quantified the number of ISGs detected among the DEGs (*k*) and evaluated whether this overlap exceeded what would be expected by chance given the size of the DEG list (*n*).
+
+The probability of observing *k* or more ISGs among the DEGs under a random sampling model was computed using the hypergeometric distribution:
+
+P(X≥k)=1−phyper(k−1,K,N−K,n).
+
+To confirm the robustness of the enrichment, we also performed a one‑tailed Fisher’s exact test on the corresponding 2×2 contingency table, testing specifically for over‑representation of ISGs among DEGs. Both approaches rely on the same underlying hypergeometric model and yielded consistent results.
+
+### Cálculo hipergeometrico
+
+La probabilidad que quieres es:
+
+P(X≥32)=1−phyper(31,K,N−K,n)P(X \\ge 32) = 1 - \\text{phyper}(31, K, N-K, n)
+
+donde:
+
+```{r}
+# Parámetros
+N  <- 21718   # total de genes expresados 
+K  <- 423     # total de ISGs conocidos, de Yu, et al 
+n  <- 94      # número de DEGs
+k  <- 32      # ISGs encontrados entre los DEGs, https://drive.google.com/file/d/1SIfY0fbtFOrq_9s8SFKGpHWnRGpT_NJq/view?usp=sharing , hay 2 repetidos, si no serian 34
+
+# Probabilidad de obtener k o más ISGs por azar
+p_value <- phyper(q = k - 1, m = K, n = N - K, k = n, lower.tail = FALSE)
+
+p_value
+```
+
+```{r}
+# Construir tabla 2x2
+mat <- matrix(c(
+  k,          # ISGs en DEGs
+  n - k,      # No-ISGs en DEGs
+  K - k,      # ISGs fuera de DEGs
+  (N - K) - (n - k)  # No-ISGs fuera de DEGs
+), nrow = 2, byrow = TRUE)
+
+colnames(mat) <- c("ISG", "No_ISG")
+rownames(mat) <- c("DEG", "No_DEG")
+
+mat
+
+# Fisher exact test
+fisher.test(mat, alternative = "greater")
+# Si corres Fisher con alternative = "greater", el p‑value será muy cercano al del hypergeometric test.
+```
+
+## SLE genes
+
+```{r}
+# Parámetros
+N  <- 21718   # total de genes expresados 
+K  <- 219     # total de SLE que encontramos en la literatura, https://drive.google.com/file/d/16ZG6bcqeTtypgX_GkNVOSTrbM261ea2l/view?usp=sharing 
+n  <- 94      # número de DEGs
+k  <- 13      # SLE encontrados entre los DEGs, https://drive.google.com/file/d/1Az2sRS0WBYiE-Uzit4sV3HjHtDFGFWfm/view?usp=sharing 
+
+# Probabilidad de obtener k o más ISGs por azar
+SLE_p_value <- phyper(q = k - 1, m = K, n = N - K, k = n, lower.tail = FALSE)
+
+SLE_p_value
+```
+
+```{r}
+# Construir tabla 2x2
+SLE_mat <- matrix(c(
+  k,          # ISGs en DEGs
+  n - k,      # No-ISGs en DEGs
+  K - k,      # ISGs fuera de DEGs
+  (N - K) - (n - k)  # No-ISGs fuera de DEGs
+), nrow = 2, byrow = TRUE)
+
+colnames(SLE_mat) <- c("SLE", "No_SLE")
+rownames(SLE_mat) <- c("DEG", "No_DEG")
+
+SLE_mat
+
+# Fisher exact test
+fisher.test(SLE_mat)
+```
+
+Correlacion de Spearman por tipos celulares
+
+```{r}
+library(dplyr)
+library(broom)
+metadata_cleaned <- read_tsv("metadata/metadata_cleaned_v2.tsv")
+
+# Solo pacientes
+patient_metadata <- metadata_cleaned %>% 
+  filter(Group == "SLE")
+patient_expr <- zscore_mat[, patient_metadata$sample_ID]
+# 1. Crear un vector de nuevos nombres 
+new_names <- patient_metadata$Cell_type 
+names(new_names) <- patient_metadata$sample_ID 
+# 2. Renombrar columnas de patient_expr 
+colnames(patient_expr) <- paste0(colnames(patient_expr), "_", new_names[colnames(patient_expr)])
+  
+# expr: matriz de expresión normalizada (genes x muestras)
+# meta: data.frame con columnas sample_id y activity
+isg <- c("IFI27","USP18","GMPR","IFI44L", "IFITM3", "CMPK2", "IFI6", 
+  "OAS1","OAS3", "OAS2", "ISG15", "HELZ2", "RSAD2", "LY6E", "IFI44", "SERPING1", "LGALS3BP", "MX1", "MX2", "XAF1", "IFIT3", "EPSTI1", "EIF2AK2",
+  "HERC5", "IFIT1", "DDX60", "HERC6", "PARP9", "OASL", "PARP14",
+  "AUTS2", "IL2RB") #  32 ISG DEG
+
+# Solo genes ISG
+patient_ISG_expr <- patient_expr[isg,]
+dim(patient_ISG_expr)
+# [1] 32 69
+```
+
+En cuales SLEDAI se relaciona?
+
+Eliminar SLEDAI arriba de 40
+
+outlayers muy lejanos.
+
+```{r}
+library(dplyr)
+library(broom)
+
+# Extraer info de columnas de patient_ISG_expr
+col_info <- data.frame(
+  colname   = colnames(patient_ISG_expr),
+  sample_ID = sub("_[^_]+$", "", colnames(patient_ISG_expr)),
+  cell_type = sub(".*_", "", colnames(patient_ISG_expr))
+)
+
+# Unir con metadata para obtener SLEDAI
+col_info <- col_info %>%
+  left_join(patient_metadata, by = "sample_ID")
+
+# Filtrar pacientes con SLEDAI <= 40
+col_info <- col_info %>% filter(SLEDAI <= 40)
+
+# Tipos celulares
+cell_types <- unique(col_info$cell_type)
+
+# Loop por tipo celular
+res <- lapply(cell_types, function(ct) {
+  
+  # columnas de ese tipo celular
+  cols_ct <- col_info %>% filter(cell_type == ct)
+  
+  # submatriz de expresión
+  expr_ct <- patient_ISG_expr[isg, cols_ct$colname, drop = FALSE]
+  
+  # promedio por paciente (si hay réplicas)
+  expr_ct_avg <- sapply(unique(cols_ct$sample_ID), function(pid) {
+    rowMeans(expr_ct[, cols_ct$sample_ID == pid, drop = FALSE])
+  })
+  
+  # vector de SLEDAI alineado
+  sle <- patient_metadata %>%
+    filter(sample_ID %in% colnames(expr_ct_avg)) %>%
+    arrange(match(sample_ID, colnames(expr_ct_avg))) %>%
+    pull(SLEDAI)
+  
+  # correlación por gen
+  res_ct <- lapply(rownames(expr_ct_avg), function(g) {
+    cor.test(as.numeric(expr_ct_avg[g, ]), sle, method = "spearman") %>%
+      tidy() %>%
+      mutate(gene = g, cell_type = ct)
+  }) %>% bind_rows()
+  
+  return(res_ct)
+}) %>% bind_rows()
+
+# Ajustar p-values por múltiples pruebas
+res <- res %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH"))
+
+# filtrar significativos
+res_sig <- res %>%
+  filter(p.value < 0.05 & p_adj < 0.05)
+res_sig
+```
+
+```{r}
+# save
+write.csv(res, file = "reviewers/Spearman_ISG_eachcelltype_table.csv")
+```

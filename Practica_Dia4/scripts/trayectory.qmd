@@ -1,0 +1,255 @@
+---
+title: "trayectoty"
+format: html
+---
+
+-   Author: Evelia Coss
+-   Date: January 25, 2026
+
+## Identificación de trayectorias
+
+Paquetes
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(here)
+library(tidyverse)
+```
+
+Cargar datos:
+
+```{r}
+#33 DEGs Genes
+load("figures/fig2/SLEvsCtrl_heatmap_matrix.RData") #SLEvsCtrl_heatmap_matrix
+# 2. Filtrar solo valores negativos 
+expr_long <- SLEvsCtrl_heatmap_matrix %>%
+    as.data.frame() %>% 
+    mutate(gene = rownames(SLEvsCtrl_heatmap_matrix)) %>% 
+    pivot_longer( cols = starts_with("SLEvsCtrl"), names_to = "condition", values_to = "expression" )
+expr_neg <- expr_long %>% filter(!is.na(expression), expression < 0) #30 DOWN DEGs
+expr_up <- expr_long %>% filter(!is.na(expression), expression > 0) #3 UP DEGs
+
+# mean expresssion in group (z-score)
+# load("figures/fig1/exp_mean_df.RData") # exp_mean_df
+load(file = 'counts/txi_filtered_v2.RData')
+# load(file = 'metadata/metadata_cleaned.RData')
+metadata_cleaned <- read_tsv("metadata/metadata_cleaned_v2.tsv")
+
+load("counts/zscore_mat.RData") # zscore_mat, my computer
+
+# Annnotation
+meta_CellTypes <- metadata_cleaned %>%
+  filter(Cell_type %in% c("monocyte", "moDC", "tolDC")) %>%
+  arrange(Cell_type, Group) %>%
+  dplyr::select(sample_ID, Group, Cell_type) %>%
+  mutate(condition = paste(Group, Cell_type, sep = "_"))
+CellTypes_samples <- meta_CellTypes$sample_ID
+
+# create matrix (negative)
+valid_down_genes <- intersect(unique(expr_neg$gene), rownames(zscore_mat))
+length(valid_genes)
+#[1] 30
+
+# Matrix
+CellType_down_mat <- zscore_mat[valid_down_genes, meta_CellTypes$sample_ID]
+
+# -----Obtain matrix------
+# make dataframe and change format (long format)
+expression_down_df <- as.data.frame(CellType_down_mat) %>%
+  rownames_to_column(var = "gene")
+expression_down_long_df <- expression_down_df %>%
+  pivot_longer(
+    cols = -gene,
+    names_to = "sample_ID",
+    values_to = "expression"
+  ) %>% 
+#join metadta information
+  left_join(meta_CellTypes, by= "sample_ID")
+
+# Obtain mean z-score and percentage 
+exp_mean_down_df <- expression_down_long_df %>% 
+  group_by(Group, Cell_type, gene) %>%
+  summarise(
+    mean_expression = mean(expression, na.rm = TRUE),
+    pct_expressed = mean(expression > 0, na.rm = TRUE) * 100,
+    n_samples = n(),
+    .groups = "drop"
+  )  %>%
+  # add information related with condition
+  mutate(condition = paste(Group, Cell_type, sep = "_")) %>%
+  # Define gene sets for each cell type
+  mutate(marker_group = case_when(
+    gene %in% monocytes_markers_IDs ~ "monocytes",
+    gene %in% moDC_markers_IDs ~ "moDC",
+    gene %in% tolDC_markers_IDs ~ "tolDC",
+    .default = "other"
+  ))
+```
+
+```{r}
+# -----------------------------
+# 3. Agregar anotacion
+# -----------------------------
+
+genes_both <- c("CCL2","EIF2AK2","HELZ2","HSPA1B","IFI6","ISG15","SIGLEC1","USP18","XAF1")
+genes_moDC <- c("AGRN","IFITM1","OAS2","OAS3","RSAD2","SELL","WIPF1")
+genes_tolDC <- c("BST2","CYP51A1","DHX58","EBP","HERC5","IDI1","IFI35","IFIT3","IL5RA","IRF7","MSMO1","MUC1","MVD","STARD4")
+
+exp_mean_Down_df <- exp_mean_down_df %>%
+  mutate(classification = case_when(
+    gene %in% genes_both ~ "Downregulated - SLE both",
+    gene %in% genes_moDC ~ "Downregulated - SLE moDC",
+    gene %in% genes_tolDC ~ "Downregulated - SLE tolDC",
+    TRUE ~ "Other"
+  ))
+
+unique(exp_mean_Down_df$classification)
+# [1] "Downregulated - SLE moDC"  "Downregulated - SLE tolDC" "Downregulated - SLE both"
+
+# -----------------------------
+# 3. Graficar trayectorias
+# -----------------------------
+
+exp_mean_Down_trayectory <-  exp_mean_Down_df %>% 
+  mutate(Cell_type = factor(Cell_type, levels = c("monocyte", "moDC", "tolDC"))) %>% 
+  ggplot(aes(x=Cell_type, y=mean_expression, group=Group, color=Group)) +
+  geom_line(size=1.2) +
+  geom_point(size=3) +
+  facet_wrap(classification~gene, scales="free_y") +
+  theme_minimal(base_size = 14) +
+  labs(title="Expression trajectories of interaction DEGs",
+       x="Differentiation stage",
+       y="Normalized expression") +
+  scale_color_manual(values=c("Ctrl"="#96d4ccff","SLE"="#b493b4ff"))
+
+```
+
+```{r}
+png(filename = here("figures/fig2/", "trayectory_group_moDC_tolDC.png"), width = 40, height = 60, units = 'cm', res =600)
+exp_mean_Down_trayectory
+dev.off()
+```
+
+Upregulated
+
+```{r}
+genes_UP_moDC <- "KDM1A"
+genes_UP_tolDC <- c("ABCG1", "FTO")
+
+#up regulated
+valid_up_genes <- intersect(unique(expr_up$gene), rownames(zscore_mat))
+length(valid_genes)
+CellType_up_mat <- zscore_mat[valid_up_genes, meta_CellTypes$sample_ID]
+dim(CellType_up_mat)
+
+# -----Obtain matrix------
+# make dataframe and change format (long format)
+expression_up_df <- as.data.frame(CellType_up_mat) %>%
+  rownames_to_column(var = "gene")
+expression_up_long_df <- expression_up_df %>%
+  pivot_longer(
+    cols = -gene,
+    names_to = "sample_ID",
+    values_to = "expression"
+  ) %>% 
+#join metadta information
+  left_join(meta_CellTypes, by= "sample_ID")
+
+# Obtain mean z-score and percentage 
+exp_mean_up_df <- expression_up_long_df %>% 
+  group_by(Group, Cell_type, gene) %>%
+  summarise(
+    mean_expression = mean(expression, na.rm = TRUE),
+    pct_expressed = mean(expression > 0, na.rm = TRUE) * 100,
+    n_samples = n(),
+    .groups = "drop"
+  )  %>%
+  # add information related with condition
+  mutate(condition = paste(Group, Cell_type, sep = "_")) %>%
+  # Define gene sets for each cell type
+  mutate(marker_group = case_when(
+    gene %in% monocytes_markers_IDs ~ "monocytes",
+    gene %in% moDC_markers_IDs ~ "moDC",
+    gene %in% tolDC_markers_IDs ~ "tolDC",
+    .default = "other"
+  ))
+
+exp_mean_up_df <- exp_mean_up_df %>%
+  mutate(classification = case_when(
+    gene %in% genes_UP_moDC ~ "Upregulated - SLE moDC",
+    gene %in% genes_UP_tolDC ~ "Upregulated - SLE tolDC",
+    TRUE ~ "Other"
+  ))
+# -----------------------------
+# 3. Graficar trayectorias
+# -----------------------------
+
+exp_mean_UP_trayectory <-  exp_mean_up_df %>% 
+  mutate(Cell_type = factor(Cell_type, levels = c("monocyte", "moDC", "tolDC"))) %>% 
+  ggplot(aes(x=Cell_type, y=mean_expression, group=Group, color=Group)) +
+  geom_line(size=1.2) +
+  geom_point(size=3) +
+  facet_wrap(classification~gene, scales="free_y") +
+  theme_minimal(base_size = 14) +
+  labs(title="Expression trajectories of interaction DEGs",
+       x="Differentiation stage",
+       y="Normalized expression") +
+  scale_color_manual(values=c("Ctrl"="#96d4ccff","SLE"="#b493b4ff"))
+
+```
+
+```{r}
+png(filename = here("figures/fig2/", "trayectory_UP_group_moDC_tolDC.png"), width = 40, height = 20, units = 'cm', res =600)
+exp_mean_UP_trayectory
+dev.off()
+```
+
+## Modificaciones en el manuscrito
+
+### **Results**
+
+línea 711
+
+These findings highlight that the transcriptional changes observed in DCs are strongly influenced by disease status, as reflected by the differential expression of 33 genes (mean \|LFC\| = 1.72, range 0.34–4.29, adj. p \< 0.05), underscoring the weight of SLE in shaping the regulatory programs of monocyte-derived DCs.
+
+```{r}
+# Convertir a vector todos los valores de LFC (ignorando NA)
+lfc_values <- unlist(SLEvsCtrl_heatmap_matrix)
+lfc_values <- lfc_values[!is.na(lfc_values)]
+
+# Calcular métricas
+mean_abs_lfc <- mean(abs(lfc_values))
+min_abs_lfc  <- min(abs(lfc_values))
+max_abs_lfc  <- max(abs(lfc_values))
+
+mean_abs_lfc
+min_abs_lfc
+max_abs_lfc
+
+```
+
+### **Discusion**
+
+línea 826
+
+Beyond these expected changes, we identified shared transcriptional profiles of DCs differentiation in both SLE and controls (**Figure 3**). In in vitro moDCs, downregulation of CXCL3 (LFC = \[value\], adj. p = \[value\]), JAK3 (LFC = \[value\], adj. p = \[value\]), and MAP3K8  (LFC = \[value\], adj. p = \[value\]) suggests attenuation of early inflammatory signaling, while upregulation of ADORA1/2B  (LFC = \[value\], adj. p = \[value\]), CD1A  (LFC = \[value\], adj. p = \[value\]), LIPA  (LFC = \[value\], adj. p = \[value\]), TRAF3  (LFC = \[value\], adj. p = \[value\]), CCR5  (LFC = \[value\], adj. p = \[value\]), TNFRSF4  (LFC = \[value\], adj. p = \[value\]), TSLP  (LFC = \[value\], adj. p = \[value\]), and IRF4  (LFC = \[value\], adj. p = \[value\]) reflects activation of pathways that support DCs maturation, lipid antigen handling, and purinergic regulation [(82–86)](https://www.zotero.org/google-docs/?kl9uK6). Moreover, we identified lower expression of IL10RA  (LFC = \[value\], adj. p = \[value\]) in in vitro moDCs from SLE patients. Given that IL-10 signaling is key for preventing DCs activation and to induce differentiation towards tolerogenic phenotype through the IL10RA–JAK1–STAT3 axis, lower IL10RA expression may suggest a decreased ability of SLE in vitro moDCs to sense and respond to IL-10, despite the elevated IL-10 levels commonly observed in SLE [(87,88)](https://www.zotero.org/google-docs/?887qz9). In contrast, in vitro moDCs from controls exhibited lower IRF4 expression  (LFC = \[value\], adj. p = \[value\]), a key driver of DCs maturation and antigen-presenting function; its reduced expression in controls is consistent with a physiologically restrained, steady-state maturation program [(89–91)](https://www.zotero.org/google-docs/?xa7Bb2).
+
+línea 840-845
+
+This higher IRF4 gene expression in SLE in vitro moDCs (LFC = \[value\], adj. p = \[value\]) likely reflects chronic in vivo inflammatory priming, consistent with the pre-activated status previously described in SLE myeloid cells [(92,93)](https://www.zotero.org/google-docs/?nRLLYv). Together, the diminished IL10RA (LFC = \[value\], adj. p = \[value\]) and dysregulated IRF4 (LFC = \[value\], adj. p = \[value\]) in SLE support the presence of cell-intrinsic defects in peripheral tolerance that may predispose antigen-presenting cells toward heightened activation. 
+
+```{r}
+load("figures/fig2/immune_markers_mat.RData") # immune_markers_mat
+```
+
+línea 846-854
+
+Regarding tolDCs, both SLE and controls exhibited a transcriptional profile that resembles the human IL‑10‑producing DCs (DC-10) subset, characterized by high IL10 (LFC = \[value\], adj. p = \[value\]) and CD163 expression (LFC = \[value\], adj. p = \[value\]), suggesting that IL-10–mediated differentiation efficiently drives these cells toward an immunosuppressive phenotype [(87,94,95)](https://www.zotero.org/google-docs/?SNxG9W). Interestingly, despite this tolerogenic signature, we observed an unexpected upregulation of HLA-DPA1(LFC = \[value\], adj. p = \[value\]) and HLA-DQA (LFC = \[value\], adj. p = \[value\]), which may reflect the preservation of antigen-presenting capacity; which under conditions of high IL-10 (LFC = \[value\], adj. p = \[value\]) and reduced co-stimulation (CD80/CD40) could support presentation of self-antigens with the aim of promoting T-cell anergy or regulatory T-cell induction [(96,97)](https://www.zotero.org/google-docs/?IEuzKt). 
+
+\
+
+línea 894-897
+
+Given that STAT1 is essential for DCs differentiation, maturation, and IFN-responsive regulatory circuits, its higher expression in controls (LFC = \[value\], adj. p = \[value\])  suggests preserved IFN-driven homeostatic signaling, supporting balanced antigen presentation and immune regulation [(111,112)](https://www.zotero.org/google-docs/?aWUzh3).
