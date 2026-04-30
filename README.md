@@ -107,7 +107,7 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
 
 - Fecha: jueves 30 de abril, 2026
 - Presentación:
-   - [GSEA - Análisis funcional](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia4_GSEA.html#1)
+   - [DEG / GSEA - Análisis funcional](https://eveliacoss.github.io/RNAseq_classFEB2026/Presentaciones/Dia5_DEG.html#1)
 - Lecturas y cursos recomendados:
     - Base de datos [Gene Ontology Resource](http://geneontology.org/)
     - Base de datos [AmiGo2](https://amigo.geneontology.org/amigo/landing)
