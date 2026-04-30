@@ -115,6 +115,10 @@ Ejemplo de entregable: [Reporte](https://eveliacoss.github.io/RNAseq_classFEB202
     - Heatmap con [ComplexHeatmap -  Github](https://github.com/jokergoo/ComplexHeatmap)
     - Heatmap con [ComplexHeatmap -  manual](https://jokergoo.github.io/ComplexHeatmap-reference/book/)
 
+
+- **Entregable 4:** Proyecto final **jueves 20 de mayo**. 
+  + Rúbrica: [Formato de evaluación](https://docs.google.com/document/d/1_RQxoMQaVy8SgOsA7_L_BkKbBXtABTt2pbwAaIX8DcE/edit?usp=sharing)
+
 ## Requisitos
 
 - Contar con una terminal en tu sistema operativo
